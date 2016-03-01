@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package kms;
+package arx.kms;
 
 // Interface exported by the server.
-service kms {
+service arx {
   //
   // Creates a new key
   //
@@ -16,7 +16,6 @@ message KeyMetadata {
   string CreationDate = 2;
   string Description = 3;
   bool Enabled = 4;
-  string KeyType = 5;
 }
 
 // CreateKeyRequest will create a key
