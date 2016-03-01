@@ -4,8 +4,8 @@ go:
   - tip
 
 install:
-  - go get github.com/keithballdotnet/arx
-  - go get -v github.com/keithballdotnet/arx
+  - go get github.com/stretchr/testify/require
+  - go get google.golang.org/grpc
   - go get golang.org/x/tools/cmd/cover
   - go get github.com/mattn/goveralls
 
