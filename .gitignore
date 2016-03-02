@@ -8,12 +8,6 @@ _obj
 _test
 bin
 pkg
-src/github.com/golang
-src/golang.org
-src/google.golang.org
-src/github.com/davecgh
-src/github.com/pmezard
-src/github.com/stretchr
 
 # Architecture specific extensions/prefixes
 *.[568vq]
@@ -30,3 +24,4 @@ _testmain.go
 *.exe
 *.test
 *.prof
+arx

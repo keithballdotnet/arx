@@ -1,20 +1,11 @@
 language: go
-
 go:
+  - 1.6
   - tip
-
 install:
-  - go get github.com/stretchr/testify/require
-  - go get google.golang.org/grpc
   - go get golang.org/x/tools/cmd/cover
-  - go get github.com/mattn/goveralls
-
+  - ./build
+  - sudo ./install
 script:
-  - cd $HOME/gopath
-  - export TRAVIS_BUILD_DIR=$HOME/gopath 
-  - go build github.com/keithballdotnet/arx
-  - go test -v -covermode=count -coverprofile=coverage.out github.com/keithballdotnet/arx
+  - ./test
   - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
-
-notifications:
-  email: false
