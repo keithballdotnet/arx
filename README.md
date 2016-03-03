@@ -1,5 +1,5 @@
 # arx
-gRPC KMS (Key Management System)
+Is a gRPC KMS (Key Management System).  More to come...
 
 [![GoDoc](https://godoc.org/github.com/keithballdotnet/arx?status.svg)](https://godoc.org/github.com/keithballdotnet/arx)
 [![Build Status](https://travis-ci.org/keithballdotnet/arx.svg)](https://travis-ci.org/keithballdotnet/arx)
