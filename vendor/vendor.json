@@ -3,6 +3,16 @@
 	"ignore": "test",
 	"package": [
 		{
+			"path": "github.com/couchbase/gocb",
+			"revision": "3d8bf80e4f8ff89799f8a3badf128270c14782fd",
+			"revisionTime": "2016-02-20T00:00:47-08:00"
+		},
+		{
+			"path": "github.com/couchbase/gocb/gocbcore",
+			"revision": "3d8bf80e4f8ff89799f8a3badf128270c14782fd",
+			"revisionTime": "2016-02-20T00:00:47-08:00"
+		},
+		{
 			"origin": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
 			"path": "github.com/davecgh/go-spew/spew",
 			"revision": "1f4a1643a57e798696635ea4c126e9127adb7d3c",
@@ -20,6 +30,11 @@
 			"revisionTime": "2016-02-21T10:44:43Z"
 		},
 		{
+			"path": "github.com/satori/go.uuid",
+			"revision": "e673fdd4dea8a7334adbbe7f57b7e4b00bdc5502",
+			"revisionTime": "2016-02-18T23:57:46Z"
+		},
+		{
 			"path": "github.com/stretchr/testify/assert",
 			"revision": "1f4a1643a57e798696635ea4c126e9127adb7d3c",
 			"revisionTime": "2016-02-21T10:44:43Z"
@@ -28,6 +43,16 @@
 			"path": "github.com/stretchr/testify/require",
 			"revision": "1f4a1643a57e798696635ea4c126e9127adb7d3c",
 			"revisionTime": "2016-02-21T10:44:43Z"
+		},
+		{
+			"path": "golang.org/x/crypto/pbkdf2",
+			"revision": "5dc8cb4b8a8eb076cbb5a06bc3b8682c15bdbbd3",
+			"revisionTime": "2016-02-25T15:07:55+01:00"
+		},
+		{
+			"path": "golang.org/x/crypto/scrypt",
+			"revision": "5dc8cb4b8a8eb076cbb5a06bc3b8682c15bdbbd3",
+			"revisionTime": "2016-02-25T15:07:55+01:00"
 		},
 		{
 			"path": "golang.org/x/net/context",
