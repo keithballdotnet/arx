@@ -7,7 +7,8 @@ Is a gRPC KMS (Key Management System).  More to come...
 
 ## Todo
 + Key Pairs auth
-+ CI
++ Import KMS logic
++ 
 
 ## Development Set Up
 ### Install protobuf

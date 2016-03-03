@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net"
+	"os"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -11,6 +13,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
 
+	"github.com/keithballdotnet/arx/kms"
 	arxpb "github.com/keithballdotnet/arx/proto"
 )
 
@@ -20,6 +23,20 @@ var (
 	keyFile  = flag.String("key_file", "testdata/server1.key", "The TLS key file")
 	port     = flag.Int("port", 10000, "The server port")
 )
+
+// Exit will return an error code and the reason to the os
+func Exit(messages string, errorCode int) {
+	// Exit code and messages based on Nagios plugin return codes (https://nagios-plugins.org/doc/guidelines.html#AEN78)
+	var prefix = map[int]string{0: "OK", 1: "Warning", 2: "Critical", 3: "Unknown"}
+
+	// Catch all unknown errorCode and convert them to Unknown
+	if errorCode < 0 || errorCode > 3 {
+		errorCode = 3
+	}
+
+	log.Printf("%s %s\n", prefix[errorCode], messages)
+	os.Exit(errorCode)
+}
 
 type arxServer struct {
 }
@@ -40,6 +57,44 @@ func newServer() *arxServer {
 }
 
 func main() {
+	var err error
+	// Select the storage provider
+	/*switch Config["GOKMS_STORAGE_PROVIDER"] {
+	case "disk":
+		kms.Storage, err = kms.NewDiskStorageProvider()
+	case "cb":
+		kms.Storage, err = kms.NewCouchbaseStorageProvider()
+	default:
+		kms.Storage, err = kms.NewDiskStorageProvider()
+	}*/
+
+	kms.Storage, err = kms.NewDiskStorageProvider()
+	if err != nil {
+		Exit(fmt.Sprintf("Problem creating storage provider: %v", err), 2)
+	}
+
+	// Which master key provider should we use?
+	/*switch Config["GOKMS_MASTERKEY_PROVIDER"] {
+	case "gokms":
+		kms.MasterKeyStore, err = kms.NewGoKMSMasterKeyProvider()
+	case "hsm":
+		// Create crypto provider
+		//MasterKeyStore, err = NewHSMMasterKeyProvider()
+	default:
+		kms.MasterKeyStore, err = kms.NewGoKMSMasterKeyProvider()
+	}*/
+
+	kms.MasterKeyStore, err = kms.NewGoKMSMasterKeyProvider()
+	if err != nil {
+		Exit(fmt.Sprintf("Problem creating master key provider: %v", err), 2)
+	}
+
+	// Create the KMS Crypto Provider
+	kms.KmsCrypto, err = kms.NewDefaultCryptoProvider()
+	if err != nil {
+		Exit(fmt.Sprintf("Problem creating crypto provider: %v", err), 2)
+	}
+
 	flag.Parse()
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
