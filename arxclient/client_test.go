@@ -1,3 +1,7 @@
+// Arx
+// Copyright (C) 2016 Keith Ball
+// License: GPL3
+
 package main
 
 import (

@@ -1,3 +1,7 @@
+// Arx
+// Copyright (C) 2016 Keith Ball
+// License: GPL3
+
 package kms
 
 // KmsCrypto is the crypto provider for the kms
