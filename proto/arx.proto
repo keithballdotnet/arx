@@ -12,13 +12,13 @@ service arx {
 
 // KeyMetadata is a representation of an Encryption Key
 message KeyMetadata {
-  string KeyID = 1;
-  string CreationDate = 2;
-  string Description = 3;
-  bool Enabled = 4;
+  required string KeyID = 1;
+  required string CreationDate_RFC3339Nano = 2;
+  optional string Description = 3;
+  required bool Enabled = 4;
 }
 
 // CreateKeyRequest will create a key
 message CreateKeyRequest {
-  string Description = 1;
+  optional string Description = 1;
 }

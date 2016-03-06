@@ -11,9 +11,8 @@ import (
 
 // Type of key
 var (
-	CustomerAESKeyType   = "aes"
-	MasterKeyType        = "masterkey"
-	CustomerECDSAKeyType = "ecdsa"
+	CustomerAESKeyType = "aes"
+	MasterKeyType      = "masterkey"
 )
 
 // Key is a represention of a key
@@ -28,19 +27,12 @@ type KeyMetadata struct {
 	CreationDate time.Time
 	Description  string
 	Enabled      bool
-	KeyType      string
 }
 
 // KeyVersion is a version of a key
 type KeyVersion struct {
 	Version int
 	Key     []byte
-}
-
-// Secret is a representation of a secret
-type Secret struct {
-	SecretID string
-	Secret   []byte
 }
 
 // GetLatest will return the latest available key

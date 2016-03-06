@@ -10,6 +10,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -50,7 +51,15 @@ func (s *arxServer) CreateKey(ctx context.Context, in *arxpb.CreateKeyRequest) (
 
 	grpclog.Printf("CreateKey Start: %v", ctx)
 
-	km := arxpb.KeyMetadata{Description: in.Description}
+	key, err := kms.KmsCrypto.CreateKey(ctx, in.Description)
+	if err != nil {
+		return nil, err
+	}
+
+	km := arxpb.KeyMetadata{KeyID: key.KeyID,
+		CreationDate: key.CreationDate.Format(time.RFC3339Nano),
+		Enabled:      key.Enabled,
+		Description:  key.Description}
 
 	return &km, nil
 }

@@ -22,15 +22,13 @@ import (
 var encryptedKeyLength = 70
 
 // DefaultCryptoProvider is an implementation of encryption using a local storage
-// GOLINT will complain about this here, but DefaultCryptoProvider is correct as
-// it differenciates between KMS and HSM crypto
 type DefaultCryptoProvider struct {
 	MasterKey []byte
 }
 
 // NewDefaultCryptoProvider ...
 func NewDefaultCryptoProvider() (DefaultCryptoProvider, error) {
-	log.Println("Using KMS crypto provider...")
+	log.Println("Using default KMS crypto provider...")
 
 	key, err := MasterKeyStore.GetKey(nil)
 	if err != nil {
@@ -100,15 +98,10 @@ func (cp DefaultCryptoProvider) ListKeys(ctx context.Context) ([]KeyMetadata, er
 }
 
 // CreateKey will create a new key
-func (cp DefaultCryptoProvider) CreateKey(ctx context.Context, description string, keyType string) (KeyMetadata, error) {
+func (cp DefaultCryptoProvider) CreateKey(ctx context.Context, description string) (KeyMetadata, error) {
 
 	// Create a new key id
 	keyID := uuid.NewV4().String()
-
-	newKeyType := "aes"
-	if keyType != "" {
-		newKeyType = keyType
-	}
 
 	// Create metadata
 	keyMetadata := KeyMetadata{
@@ -116,21 +109,9 @@ func (cp DefaultCryptoProvider) CreateKey(ctx context.Context, description strin
 		Description:  description,
 		CreationDate: time.Now().UTC(),
 		Enabled:      true,
-		KeyType:      newKeyType,
 	}
 
-	encKey := []byte{}
-
-	// Create a new secret key
-	if newKeyType == CustomerAESKeyType {
-		encKey = crypto.GenerateAesKey()
-	} else if newKeyType == CustomerECDSAKeyType {
-		priv, _ := crypto.GenerateECDSAKey()
-		encPriv, _ := crypto.ECDSAEncodePrivateKey(priv)
-		encKey = encPriv
-	} else {
-		return KeyMetadata{}, errors.New("Unknown key type: " + keyType)
-	}
+	encKey := crypto.GenerateAesKey()
 
 	// Create new key object
 	key := Key{Metadata: keyMetadata, Versions: []KeyVersion{{Version: 1, Key: encKey}}}
@@ -150,11 +131,6 @@ func (cp DefaultCryptoProvider) RotateKey(ctx context.Context, KeyID string) err
 	key, err := cp.GetKey(ctx, KeyID)
 	if err != nil {
 		return err
-	}
-
-	// Only AES keys can be rotated
-	if key.Metadata.KeyType != CustomerAESKeyType {
-		return errors.New("Only AES key rotation is supported")
 	}
 
 	// Support per key a maximum of 99999 rotations...
@@ -225,39 +201,6 @@ func (cp DefaultCryptoProvider) GetKey(ctx context.Context, KeyID string) (Key, 
 	return key, nil
 }
 
-// Sign will sign data and return a signiture
-func (cp DefaultCryptoProvider) Sign(ctx context.Context, data []byte, KeyID string) ([]byte, error) {
-
-	key, err := cp.GetKey(ctx, KeyID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check to see if key is enabled
-	if !key.Metadata.Enabled {
-		return nil, errors.New("Key is not enabled!")
-	}
-
-	// Check if correct key type
-	if key.Metadata.KeyType != CustomerECDSAKeyType {
-		return nil, errors.New("Key can not be used for signing!")
-	}
-
-	// Decode key
-	priv, err := crypto.ECDSADecodePrivateKey(key.GetLatest())
-	if err != nil {
-		return nil, err
-	}
-
-	// Sign the data
-	return crypto.ECDSASign(priv, data)
-}
-
-// Verify will unpack a signiture and verify it
-func (cp DefaultCryptoProvider) Verify(data []byte, sig []byte) (bool, error) {
-	return crypto.ECDSAVerify(data, sig), nil
-}
-
 // ReEncrypt will decrypt with the current key, and rencrypt with the new key id
 func (cp DefaultCryptoProvider) ReEncrypt(ctx context.Context, data []byte, KeyID string) ([]byte, string, error) {
 
@@ -288,11 +231,6 @@ func (cp DefaultCryptoProvider) Encrypt(ctx context.Context, data []byte, KeyID 
 	// Check to see if key is enabled
 	if !key.Metadata.Enabled {
 		return nil, errors.New("Key is not enabled!")
-	}
-
-	// Check if correct key type
-	if key.Metadata.KeyType == CustomerECDSAKeyType {
-		return nil, errors.New("Key can not be used for encryption!")
 	}
 
 	encryptedData, err := crypto.AesGCMEncrypt(data, key.GetLatest())
@@ -339,11 +277,6 @@ func (cp DefaultCryptoProvider) Decrypt(ctx context.Context, data []byte) ([]byt
 		return nil, "", errors.New("Key is not enabled!")
 	}
 
-	// Check if correct key type
-	if key.Metadata.KeyType == CustomerECDSAKeyType {
-		return nil, "", errors.New("Key can not be used for encryption!")
-	}
-
 	// Extract key version from id.
 	keyVersion, _ := strconv.Atoi(keyIDParts[1])
 
@@ -355,68 +288,4 @@ func (cp DefaultCryptoProvider) Decrypt(ctx context.Context, data []byte) ([]byt
 	}
 
 	return decryptedData, key.Metadata.KeyID, nil
-}
-
-// GetSecret by name
-func (cp DefaultCryptoProvider) GetSecret(ctx context.Context, secretID string) (Secret, error) {
-	var err error
-
-	// Read encrypted secret from disk
-	encryptedSecret, err := Storage.GetSecret(ctx, secretID)
-	if err != nil {
-		log.Printf("GetSecret() failed %s\n", err)
-		return Secret{}, err
-	}
-
-	// decrypt the data on disk with the master key
-	decryptedData, err := crypto.AesGCMDecrypt(encryptedSecret, cp.MasterKey)
-	if err != nil {
-		log.Printf("GetSecret() failed %s\n", err)
-		return Secret{}, err
-	}
-
-	var secret Secret
-	err = json.Unmarshal(decryptedData, &secret)
-	if err != nil {
-		log.Printf("GetSecret() failed %s\n", err)
-		return Secret{}, err
-	}
-
-	return secret, nil
-}
-
-// SetSecret by name
-func (cp DefaultCryptoProvider) SetSecret(ctx context.Context, secretID string, data []byte, overwrite bool) error {
-
-	if strings.TrimSpace(secretID) == "" {
-		return errors.New("Empty secret ID")
-	}
-
-	// Create secret struct
-	secret := Secret{SecretID: secretID, Secret: data}
-
-	// JSON -> byte
-	secretData, err := json.Marshal(secret)
-	if err != nil {
-		return err
-	}
-
-	// Encrypt the secret data with the user key and perist to disk..
-	encryptedSecret, err := crypto.AesGCMEncrypt(secretData, cp.MasterKey)
-	if err != nil {
-		return err
-	}
-
-	// Persist key to storage
-	err = Storage.SaveSecret(ctx, secretID, encryptedSecret, overwrite)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ListSecrets will list all available secrets
-func (cp DefaultCryptoProvider) ListSecrets(ctx context.Context) ([]string, error) {
-	return Storage.ListSecrets(ctx)
 }
