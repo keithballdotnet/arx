@@ -9,6 +9,8 @@ install:
 
 script:
   - go build github.com/keithballdotnet/arx
+  - go test -v github/keithballdotnet/arx/kms
+  - go test -v github/keithballdotnet/arx/crypto
   - go test -v -covermode=count -coverprofile=coverage.out github.com/keithballdotnet/arx
   - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
 

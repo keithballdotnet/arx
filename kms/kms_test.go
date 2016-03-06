@@ -73,64 +73,13 @@ func SetUpSuite(t *testing.T) {
 	fmt.Printf("Key is: %v %v", key, string(key))
 }*/
 
-func TestCreateECDSAKeyThenGetKeyListKeysAndCheckKeyIsThere(t *testing.T) {
-
-	SetUpSuite(t)
-
-	desc := "A new key description!"
-
-	keyType := "ecdsa"
-
-	keyMetadata, err := KmsCrypto.CreateKey(nil, desc, keyType)
-
-	// No error
-	require.True(t, err == nil)
-
-	require.True(t, desc == keyMetadata.Description)
-	require.True(t, keyMetadata.Enabled)
-	require.True(t, keyMetadata.KeyID != "")
-
-	key, err := KmsCrypto.GetKey(nil, keyMetadata.KeyID)
-
-	// No error
-	require.True(t, err == nil)
-
-	// Ensure key can be decoded
-	_, err = crypto.ECDSADecodePrivateKey(key.GetLatest())
-	require.True(t, err == nil)
-
-	require.True(t, key.Metadata.Description == desc)
-
-	require.True(t, key.Metadata.Enabled)
-
-	require.True(t, key.Metadata.KeyType == keyType)
-
-	keyList, err := KmsCrypto.ListKeys(nil)
-
-	// No error
-	require.True(t, err == nil)
-
-	keyFoundInList := false
-
-	for _, k := range keyList {
-		if k.KeyID == keyMetadata.KeyID {
-			keyFoundInList = true
-			break
-		}
-	}
-
-	require.True(t, keyFoundInList)
-}
-
 func TestCreateAESKeyThenGetKeyListKeysAndCheckKeyIsThere(t *testing.T) {
 
 	SetUpSuite(t)
 
 	desc := "A new key description!"
 
-	keyType := "aes"
-
-	keyMetadata, err := KmsCrypto.CreateKey(nil, desc, keyType)
+	keyMetadata, err := KmsCrypto.CreateKey(nil, desc)
 
 	// No error
 	require.True(t, err == nil)
@@ -150,8 +99,6 @@ func TestCreateAESKeyThenGetKeyListKeysAndCheckKeyIsThere(t *testing.T) {
 	require.True(t, key.Metadata.Description == desc)
 
 	require.True(t, key.Metadata.Enabled)
-
-	require.True(t, key.Metadata.KeyType == keyType)
 
 	keyList, err := KmsCrypto.ListKeys(nil)
 
