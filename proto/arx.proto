@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package arx.kms;
+package arx;
 
 // Interface exported by the server.
 service arx {
@@ -8,17 +8,23 @@ service arx {
   // Creates a new key
   //
   rpc CreateKey(CreateKeyRequest) returns (KeyMetadata) {}
+  //
+  // Stream a list of keys back to the client
+  //
+  rpc ListKeys(ListKeysRequest) returns (stream KeyMetadata) {}
 }
 
 // KeyMetadata is a representation of an Encryption Key
 message KeyMetadata {
-  required string KeyID = 1;
-  required string CreationDate_RFC3339Nano = 2;
-  optional string Description = 3;
-  required bool Enabled = 4;
+  string KeyID = 1;
+  string CreationDate_RFC3339Nano = 2;
+  string Description = 3;
+  bool Enabled = 4;
 }
 
 // CreateKeyRequest will create a key
 message CreateKeyRequest {
-  optional string Description = 1;
+  string Description = 1;
 }
+
+message ListKeysRequest {}  

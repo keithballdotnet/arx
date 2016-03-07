@@ -53,15 +53,41 @@ func (s *arxServer) CreateKey(ctx context.Context, in *arxpb.CreateKeyRequest) (
 
 	key, err := kms.KmsCrypto.CreateKey(ctx, in.Description)
 	if err != nil {
+		log.Errorf("CreateKey: %v", err)
 		return nil, err
 	}
 
-	km := arxpb.KeyMetadata{KeyID: key.KeyID,
-		CreationDate: key.CreationDate.Format(time.RFC3339Nano),
-		Enabled:      key.Enabled,
-		Description:  key.Description}
+	km := convertKey(&key)
 
-	return &km, nil
+	return km, nil
+}
+
+func (s *arxServer) ListKeys(in *arxpb.ListKeysRequest, stream arxpb.Arx_ListKeysServer) error {
+	ctx := stream.Context()
+
+	log.Infof("ListKeys Start: %v", ctx)
+
+	keys, err := kms.KmsCrypto.ListKeys(ctx)
+	if err != nil {
+		log.Errorf("ListKeys: %v", err)
+		return err
+	}
+
+	for _, key := range keys {
+		km := convertKey(&key)
+		if err := stream.Send(km); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func convertKey(km *kms.KeyMetadata) *arxpb.KeyMetadata {
+	outkm := arxpb.KeyMetadata{KeyID: km.KeyID,
+		CreationDate_RFC3339Nano: km.CreationDate.Format(time.RFC3339Nano),
+		Enabled:                  km.Enabled,
+		Description:              km.Description}
+	return &outkm
 }
 
 func newServer() *arxServer {
