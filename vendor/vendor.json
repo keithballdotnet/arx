@@ -19,6 +19,11 @@
 			"revisionTime": "2016-02-21T10:44:43Z"
 		},
 		{
+			"path": "github.com/golang/glog",
+			"revision": "23def4e6c14b4da8ac2ed8007337bc5eb5007998",
+			"revisionTime": "2016-01-25T21:49:56+01:00"
+		},
+		{
 			"path": "github.com/golang/protobuf/proto",
 			"revision": "552c7b9542c194800fd493123b3798ef0a832032",
 			"revisionTime": "2016-02-26T12:45:00+11:00"
