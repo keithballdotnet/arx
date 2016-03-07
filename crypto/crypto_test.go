@@ -136,22 +136,6 @@ func TestAesGCMCrypto(t *testing.T) {
 	require.True(t, bytes.Equal(bytesToEncrypt, unencryptedBytes))
 }
 
-func TestECDSASignAndVerify(t *testing.T) {
-
-	data := []byte("ThisIsAHash")
-
-	// Generate a new ECDSA Key
-	key, err := GenerateECDSAKey()
-	require.True(t, err == nil)
-
-	sig, err := ECDSASign(key, data)
-	require.True(t, err == nil)
-	fmt.Printf("ECDSA Sign.  Sig Len: %v Sig: %v\n", len(sig), string(sig))
-
-	ok := ECDSAVerify(data, sig)
-	require.True(t, ok)
-}
-
 func TestHMACKey(t *testing.T) {
 
 	expectedHmac := "RvPtP0QB7iIun1ehwheD4YUo7+fYfw7/ywl+HsC5Ddk="

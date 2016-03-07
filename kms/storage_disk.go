@@ -7,10 +7,11 @@ package kms
 import (
 	"errors"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	log "github.com/golang/glog"
 
 	"golang.org/x/net/context"
 )
@@ -25,7 +26,7 @@ func NewDiskStorageProvider() (DiskStorageProvider, error) {
 
 	path := os.Getenv("GOKMS_PATH")
 
-	log.Printf("Using DiskStorageProvider - Disk Path: %v", path)
+	log.Infof("Using DiskStorageProvider - Disk Path: %v", path)
 
 	return DiskStorageProvider{path: path}, nil
 }
@@ -35,7 +36,7 @@ func (sp DiskStorageProvider) SaveKey(ctx context.Context, keyID string, data []
 
 	keyPath := filepath.Join(sp.path, keyID+".key")
 
-	log.Printf("SaveKey: %v", keyPath)
+	log.Infof("SaveKey: %v", keyPath)
 
 	_, err := os.Stat(keyPath)
 	if err == nil && !overwrite {
@@ -50,7 +51,7 @@ func (sp DiskStorageProvider) GetKey(ctx context.Context, keyID string) ([]byte,
 
 	keyPath := filepath.Join(sp.path, keyID+".key")
 
-	log.Printf("GetKey: %v", keyPath)
+	log.Infof("GetKey: %v", keyPath)
 
 	return ioutil.ReadFile(keyPath)
 }

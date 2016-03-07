@@ -6,11 +6,11 @@ package kms
 
 import (
 	"errors"
-	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
+
+	log "github.com/golang/glog"
 
 	"golang.org/x/net/context"
 
@@ -36,13 +36,13 @@ func NewCouchbaseStorageProvider() (CouchbaseStorageProvider, error) {
 
 	cluster, err := gocb.Connect(cbhost)
 	if err != nil {
-		log.Println(fmt.Sprintf("Error getting bucket:  %v", err))
+		log.Errorf("Error getting bucket:  %v", err)
 		return CouchbaseStorageProvider{}, err
 	}
 
 	bucket, err := cluster.OpenBucket(cbbuket, "")
 	if err != nil {
-		log.Println(fmt.Sprintf("Error getting bucket:  %v", err))
+		log.Errorf("Error getting bucket:  %v", err)
 		return CouchbaseStorageProvider{}, err
 	}
 
@@ -66,7 +66,7 @@ func (sp CouchbaseStorageProvider) SaveKey(ctx context.Context, keyID string, da
 
 	keyPath := "gokms:key:" + keyID
 
-	log.Printf("SaveKey: %v", keyPath)
+	log.Infof("SaveKey: %v", keyPath)
 
 	if sp.bucket == nil {
 		return errors.New("No couchbase bucket!")
@@ -95,13 +95,13 @@ func (sp CouchbaseStorageProvider) SaveKey(ctx context.Context, keyID string, da
 	// Get key list
 	_, err := sp.bucket.Get("gokms:keylist", &keyList)
 
-	log.Printf("Add key got keylist: %v", keyList)
+	log.Infof("Add key got keylist: %v", keyList)
 
 	if err != nil {
-		log.Printf("Error getting key list: %v", err)
+		log.Infof("Error getting key list: %v", err)
 		// We got an error.  If not found that is ok.
 		if strings.Contains(strings.ToLower(err.Error()), "not found") {
-			log.Println("Not found error... creating empty list")
+			log.Infoln("Not found error... creating empty list")
 			keyList = KeyIDList{KeyIDs: []string{}}
 		} else {
 			return err
@@ -110,16 +110,16 @@ func (sp CouchbaseStorageProvider) SaveKey(ctx context.Context, keyID string, da
 
 	// Add the key id it not already there
 	if !contains(keyList.KeyIDs, keyID) {
-		log.Printf("Adding key %v to key list", keyID)
+		log.Infof("Adding key %v to key list", keyID)
 		keyList.KeyIDs = append(keyList.KeyIDs, keyID)
 	}
 
-	log.Printf("Setting keylist: %v", keyList)
+	log.Infof("Setting keylist: %v", keyList)
 
 	// Preseve the key list
 	_, err = sp.bucket.Upsert("gokms:keylist", keyList, 0)
 	if err != nil {
-		log.Printf("Error setting key list: %v", err)
+		log.Infof("Error setting key list: %v", err)
 	}
 
 	return err
@@ -144,7 +144,7 @@ func (sp CouchbaseStorageProvider) GetKey(ctx context.Context, keyID string) ([]
 
 	keyPath := "gokms:key:" + keyID
 
-	log.Printf("GetKey: %v", keyPath)
+	log.Infof("GetKey: %v", keyPath)
 
 	var data RawData
 	_, err := sp.bucket.Get(keyPath, &data)
@@ -162,7 +162,7 @@ func (sp CouchbaseStorageProvider) ListCustomerKeyIDs(ctx context.Context) ([]st
 		return nil, err
 	}
 
-	log.Printf("ListKeys keylist: %v", keyList)
+	log.Infof("ListKeys keylist: %v", keyList)
 
 	return keyList.KeyIDs, nil
 }

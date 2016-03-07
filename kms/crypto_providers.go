@@ -8,10 +8,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	log "github.com/golang/glog"
 
 	"github.com/keithballdotnet/arx/crypto"
 	"github.com/satori/go.uuid"
@@ -28,7 +29,7 @@ type DefaultCryptoProvider struct {
 
 // NewDefaultCryptoProvider ...
 func NewDefaultCryptoProvider() (DefaultCryptoProvider, error) {
-	log.Println("Using default KMS crypto provider...")
+	log.Infoln("Using default KMS crypto provider...")
 
 	key, err := MasterKeyStore.GetKey(nil)
 	if err != nil {
@@ -88,7 +89,7 @@ func (cp DefaultCryptoProvider) ListKeys(ctx context.Context) ([]KeyMetadata, er
 	for _, keyID := range keyLists {
 		key, err := cp.GetKey(ctx, keyID)
 		if err != nil {
-			log.Printf("ListKeys() got problem getting key %s: %v\n", keyID, err)
+			log.Errorf("ListKeys() got problem getting key %s: %v\n", keyID, err)
 		} else {
 			metadata = append(metadata, key.Metadata)
 		}
@@ -180,21 +181,21 @@ func (cp DefaultCryptoProvider) GetKey(ctx context.Context, KeyID string) (Key, 
 	// Read encrypted key from disk
 	encryptedKey, err = Storage.GetKey(ctx, KeyID)
 	if err != nil {
-		log.Printf("GetKey() failed %s\n", err)
+		log.Errorf("GetKey() failed %s\n", err)
 		return Key{}, err
 	}
 
 	// decrypt the data on disk with the users derived key
 	decryptedData, err := crypto.AesGCMDecrypt(encryptedKey, cp.MasterKey)
 	if err != nil {
-		log.Printf("GetKey() failed %s\n", err)
+		log.Errorf("GetKey() failed %s\n", err)
 		return Key{}, err
 	}
 
 	var key Key
 	err = json.Unmarshal(decryptedData, &key)
 	if err != nil {
-		log.Printf("GetKey() failed %s\n", err)
+		log.Errorf("GetKey() failed %s\n", err)
 		return Key{}, err
 	}
 
@@ -283,7 +284,7 @@ func (cp DefaultCryptoProvider) Decrypt(ctx context.Context, data []byte) ([]byt
 	// Let's decrypt the data
 	decryptedData, err := crypto.AesGCMDecrypt(encryptedData, key.GetVersion(keyVersion))
 	if err != nil {
-		log.Printf("Decrypt() failed %s\n", err)
+		log.Errorf("Decrypt() failed %s\n", err)
 		return nil, "", err
 	}
 

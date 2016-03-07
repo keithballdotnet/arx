@@ -7,11 +7,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"time"
 
+	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
@@ -39,7 +39,7 @@ func Exit(messages string, errorCode int) {
 		errorCode = 3
 	}
 
-	log.Printf("%s %s\n", prefix[errorCode], messages)
+	log.Infof("%s %s\n", prefix[errorCode], messages)
 	os.Exit(errorCode)
 }
 
@@ -49,7 +49,7 @@ type arxServer struct {
 // CreateGroup
 func (s *arxServer) CreateKey(ctx context.Context, in *arxpb.CreateKeyRequest) (*arxpb.KeyMetadata, error) {
 
-	grpclog.Printf("CreateKey Start: %v", ctx)
+	log.Infof("CreateKey Start: %v", ctx)
 
 	key, err := kms.KmsCrypto.CreateKey(ctx, in.Description)
 	if err != nil {
@@ -70,6 +70,7 @@ func newServer() *arxServer {
 }
 
 func main() {
+
 	var err error
 	// Select the storage provider
 	/*switch Config["GOKMS_STORAGE_PROVIDER"] {
@@ -111,7 +112,7 @@ func main() {
 	flag.Parse()
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
-		grpclog.Fatalf("failed to listen: %v", err)
+		log.Fatalf("failed to listen: %v", err)
 	}
 	var opts []grpc.ServerOption
 	if *tls {
@@ -122,7 +123,7 @@ func main() {
 		opts = []grpc.ServerOption{grpc.Creds(creds)}
 	}
 	grpcServer := grpc.NewServer(opts...)
-	fmt.Printf("Starting Arx RPC server: %s", lis.Addr().String())
+	log.Infof("Starting Arx RPC server: %s", lis.Addr().String())
 
 	arxpb.RegisterArxServer(grpcServer, newServer())
 	grpcServer.Serve(lis)

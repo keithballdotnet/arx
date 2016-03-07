@@ -6,8 +6,9 @@ package kms
 
 import (
 	"fmt"
-	"log"
 	"os"
+
+	log "github.com/golang/glog"
 
 	"github.com/keithballdotnet/arx/crypto"
 	"golang.org/x/net/context"
@@ -21,7 +22,7 @@ type GoKMSMasterKeyProvider struct {
 // NewGoKMSMasterKeyProvider ...
 func NewGoKMSMasterKeyProvider() (GoKMSMasterKeyProvider, error) {
 
-	log.Println("Using GoKMSMasterKeyProvider...")
+	log.Infoln("Using GoKMSMasterKeyProvider...")
 
 	passphrase := os.Getenv("GOKMS_PASSPHRASE")
 

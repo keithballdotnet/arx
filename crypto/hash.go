@@ -12,7 +12,8 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"io"
-	"log"
+
+	log "github.com/golang/glog"
 )
 
 // GetHmac256 will generate a HMAC hash encoded to base64
@@ -20,7 +21,7 @@ func GetHmac256(message string, secret string) string {
 	key := []byte(secret)
 	h := hmac.New(sha256.New, key)
 	if _, err := h.Write([]byte(message)); err != nil {
-		log.Printf("Error computing MAC: %v", err)
+		log.Errorf("Error computing MAC: %v", err)
 	}
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
@@ -33,7 +34,7 @@ func GetHmac256(message string, secret string) string {
 func ComputeMd5Checksum(data []byte) []byte {
 	h := md5.New()
 	if _, err := h.Write(data); err != nil {
-		log.Printf("Error computing MD5 checksum: %v", err)
+		log.Errorf("Error computing MD5 checksum: %v", err)
 	}
 	return h.Sum(nil)
 }
@@ -42,7 +43,7 @@ func ComputeMd5Checksum(data []byte) []byte {
 func ComputeMd5ChecksumString(data []byte) string {
 	h := md5.New()
 	if _, err := h.Write(data); err != nil {
-		log.Printf("Error computing MD5 checksum: %v", err)
+		log.Errorf("Error computing MD5 checksum: %v", err)
 	}
 	return hex.EncodeToString(h.Sum(nil))
 }
@@ -51,7 +52,7 @@ func ComputeMd5ChecksumString(data []byte) string {
 func ComputeSha256Checksum(data []byte) []byte {
 	hash := sha256.New()
 	if _, err := hash.Write(data); err != nil {
-		log.Printf("Error computing SHA-256 checksum: %v", err)
+		log.Errorf("Error computing SHA-256 checksum: %v", err)
 	}
 	return hash.Sum(nil)
 }
@@ -65,7 +66,7 @@ func GetSha256HashString(data []byte) string {
 func GetSha256HashStringFromStream(stream io.Reader) string {
 	hash := sha256.New()
 	if _, err := io.Copy(hash, stream); err != nil {
-		log.Printf("Error computing SHA-256 checksum: %v", err)
+		log.Errorf("Error computing SHA-256 checksum: %v", err)
 	}
 	return hex.EncodeToString(hash.Sum(nil))
 }

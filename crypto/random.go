@@ -7,8 +7,9 @@ package crypto
 import (
 	"crypto/rand"
 	"encoding/binary"
-	"log"
 	mathrand "math/rand"
+
+	log "github.com/golang/glog"
 )
 
 // GetRandomInt Get a random number
@@ -18,7 +19,7 @@ func GetRandomInt(min, max int) int {
 	// We should not use the time as the seed as this will lead to predicatable PINs
 	var n int64
 	if err := binary.Read(rand.Reader, binary.LittleEndian, &n); err != nil {
-		log.Printf("Error reading random bytes: %v", err)
+		log.Errorf("Error reading random bytes: %v", err)
 	}
 	mathrand.Seed(n)
 
@@ -57,7 +58,7 @@ func GetRandomString(length int, charSet string) string {
 
 	var bytes = make([]byte, length)
 	if _, err := rand.Read(bytes); err != nil {
-		log.Printf("Error reading random bytes: %v", err)
+		log.Errorf("Error reading random bytes: %v", err)
 	}
 	for k, v := range bytes {
 		bytes[k] = dictionary[v%byte(len(dictionary))]

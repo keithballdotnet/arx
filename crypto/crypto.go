@@ -5,18 +5,14 @@
 package crypto
 
 import (
-	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/sha1"
-	"encoding/json"
 	"errors"
 	"io"
-	"log"
-	"math/big"
+
+	log "github.com/golang/glog"
 
 	"golang.org/x/crypto/pbkdf2"
 	"golang.org/x/crypto/scrypt"
@@ -88,7 +84,7 @@ func GetScryptAesKey(passphrase string, salt []byte) []byte {
 func GenerateSalt(length int) []byte {
 	salt := make([]byte, length)
 	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
-		log.Printf("Error reading random bytes: %v", err)
+		log.Errorf("Error reading random bytes: %v", err)
 	}
 	return salt
 }
@@ -97,121 +93,8 @@ func GenerateSalt(length int) []byte {
 func GenerateAesKey() []byte {
 	key := make([]byte, 32)
 	if _, err := io.ReadFull(rand.Reader, key); err != nil {
-		log.Printf("Error reading random bytes: %v", err)
+		log.Errorf("Error reading random bytes: %v", err)
 	}
 
 	return key
-}
-
-// Which curve should be used?  P521 is considered a SafeCurve...
-//  http://safecurves.cr.yp.to/
-//  http://infosecurity.ch/20100926/not-every-elliptic-curve-is-the-same-trough-on-ecc-security/
-//  http://www.hyperelliptic.org/tanja/vortraege/20130531.pdf
-
-// GenerateECDSAKey will create a new ECDSA key that can be used for signing and verifying data
-func GenerateECDSAKey() (*ecdsa.PrivateKey, error) {
-	return ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
-}
-
-// ECDSASign will sign a block of data.  This should be a hash from data
-func ECDSASign(priv *ecdsa.PrivateKey, data []byte) ([]byte, error) {
-
-	// Sign
-	r, s, err := ecdsa.Sign(rand.Reader, priv, data)
-	if err != nil {
-		return nil, err
-	}
-
-	encodedPub, err := ECDSAEncodePublicKey(&priv.PublicKey)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create signature
-	var buf bytes.Buffer
-	enc := json.NewEncoder(&buf)
-
-	// Pack into sig, the public key and the sig values
-	if err := enc.Encode([][]byte{encodedPub, r.Bytes(), s.Bytes()}); err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
-}
-
-// ECDSAVerify will verify a block of data with the passed values
-func ECDSAVerify(data []byte, sig []byte) bool {
-
-	// Unpack sig
-	var unpackedSig [][]byte
-	dec := json.NewDecoder(bytes.NewBuffer(sig))
-	if err := dec.Decode(&unpackedSig); err != nil {
-		log.Printf("Error decoding signature: %v", err)
-	}
-
-	// Extract public key from sig
-	publicKey, err := ECDSADecodePublicKey(unpackedSig[0])
-	if err != nil {
-		return false
-	}
-
-	// Get S & R
-	r := new(big.Int)
-	s := new(big.Int)
-	r.SetBytes(unpackedSig[1])
-	s.SetBytes(unpackedSig[2])
-
-	// Now verify values
-	return ecdsa.Verify(publicKey, data, r, s)
-}
-
-// ECDSAEncodePrivateKey will encode a private key to bytes
-func ECDSAEncodePrivateKey(key *ecdsa.PrivateKey) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	enc := json.NewEncoder(buf)
-	err := enc.Encode([]big.Int{*key.X, *key.Y, *key.D})
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
-
-// ECDSADecodePrivateKey will decode a private key from bytes
-func ECDSADecodePrivateKey(b []byte) (*ecdsa.PrivateKey, error) {
-	var p []big.Int
-	buf := bytes.NewBuffer(b)
-	dec := json.NewDecoder(buf)
-	err := dec.Decode(&p)
-	if err != nil {
-		return nil, err
-	}
-	privateKey := new(ecdsa.PrivateKey)
-	privateKey.PublicKey.Curve = elliptic.P521()
-	privateKey.PublicKey.X = &p[0]
-	privateKey.PublicKey.Y = &p[1]
-	privateKey.D = &p[2]
-	return privateKey, nil
-}
-
-// ECDSAEncodePublicKey will encode a public key to bytes
-func ECDSAEncodePublicKey(key *ecdsa.PublicKey) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	enc := json.NewEncoder(buf)
-	err := enc.Encode([]big.Int{*key.X, *key.Y})
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
-
-// ECDSADecodePublicKey will decode a public key from bytes
-func ECDSADecodePublicKey(b []byte) (*ecdsa.PublicKey, error) {
-	var p []big.Int
-	buf := bytes.NewBuffer(b)
-	dec := json.NewDecoder(buf)
-	err := dec.Decode(&p)
-	if err != nil {
-		return nil, err
-	}
-	return &ecdsa.PublicKey{Curve: elliptic.P521(), X: &p[0], Y: &p[1]}, nil
 }
