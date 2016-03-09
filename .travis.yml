@@ -4,11 +4,15 @@ go:
   - tip
 
 install:
-  - go get golang.org/x/tools/cmd/cover github.com/mattn/goveralls github.com/modocache/gover
+  - go get golang.org/x/tools/cmd/cover 
+  - go get github.com/mattn/goveralls
+  - go get github.com/modocache/gover
 
 script:
   - go build github.com/keithballdotnet/arx
-  - go list -f '{{if len .TestGoFiles}}"go test -coverprofile={{.Dir}}/.coverprofile {{.ImportPath}}"{{end}}' ./... | xargs -L 1 sh -c
+  - go test -v -covermode=count -coverprofile=kms.coverage.out github.com/keithballdotnet/arx/kms
+  - go test -v -covermode=count -coverprofile=crypto.coverage.out github.com/keithballdotnet/arx/crypto	
+  - go test -v -covermode=count -coverprofile=arx.coverage.out github.com/keithballdotnet/arx
   - gover
   - goveralls -coverprofile=gover.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN
 
