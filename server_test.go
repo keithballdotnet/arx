@@ -70,3 +70,26 @@ func Test_CreateKey_Success(t *testing.T) {
 	require.WithinDuration(t, time.Now(), createDate, 5*time.Second)
 
 }
+
+func Test_ListKeys_Success(t *testing.T) {
+	SetUpSuite(t)
+
+	server := newServer()
+
+	ctx := context.TODO()
+
+	testDescription := "Stamos"
+
+	ckr := arxpb.CreateKeyRequest{Description: testDescription}
+
+	km, err := server.CreateKey(ctx, &ckr)
+	require.NoError(t, err)
+	require.NotNil(t, km)
+	require.Equal(t, km.Description, testDescription)
+	require.NotEmpty(t, km.KeyID)
+	require.True(t, km.Enabled)
+	createDate, err := time.Parse(time.RFC3339Nano, km.CreationDate_RFC3339Nano)
+	require.NoError(t, err)
+	require.WithinDuration(t, time.Now(), createDate, 5*time.Second)
+
+}

@@ -16,7 +16,6 @@ import (
 	"google.golang.org/grpc"
 
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/grpclog"
 
 	"github.com/keithballdotnet/arx/kms"
 	arxpb "github.com/keithballdotnet/arx/proto"
@@ -136,7 +135,12 @@ func main() {
 	}
 
 	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	addr, _ := startServer(fmt.Sprintf(":%d", *port))
+	log.Infof("Started Arx RPC server: %s", addr)
+}
+
+func startServer(addr string) (string, func()) {
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -144,13 +148,14 @@ func main() {
 	if *tls {
 		creds, err := credentials.NewServerTLSFromFile(*certFile, *keyFile)
 		if err != nil {
-			grpclog.Fatalf("Failed to generate credentials %v", err)
+			log.Fatalf("failed to listen: %v", err)
 		}
 		opts = []grpc.ServerOption{grpc.Creds(creds)}
 	}
-	grpcServer := grpc.NewServer(opts...)
-	log.Infof("Starting Arx RPC server: %s", lis.Addr().String())
-
-	arxpb.RegisterArxServer(grpcServer, newServer())
-	grpcServer.Serve(lis)
+	s := grpc.NewServer(opts...)
+	arxpb.RegisterArxServer(s, newServer())
+	go s.Serve(lis)
+	return lis.Addr().String(), func() {
+		s.Stop()
+	}
 }
