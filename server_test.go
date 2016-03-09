@@ -5,18 +5,24 @@
 package main
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/keithballdotnet/arx/kms"
-	arxpb "github.com/keithballdotnet/arx/proto"
-	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/grpclog"
+
+	"github.com/keithballdotnet/arx/kms"
+	"github.com/stretchr/testify/require"
+
+	arxpb "github.com/keithballdotnet/arx/proto"
 )
 
-func SetUpSuite(t *testing.T) {
+func setUp(t *testing.T) {
 
 	err := os.Setenv("GOKMS_HSM_SLOT_PASSWORD", "1234")
 	require.NoError(t, err)
@@ -46,20 +52,28 @@ func SetUpSuite(t *testing.T) {
 	require.NoError(t, err)
 	kms.KmsCrypto, err = kms.NewDefaultCryptoProvider()
 	require.NoError(t, err)
+
 }
 
-func Test_CreateKey_Success(t *testing.T) {
-	SetUpSuite(t)
+func Test_Success(t *testing.T) {
+	setUp(t)
 
-	server := newServer()
+	_, stopServer := startServer(":10000")
+	defer stopServer()
+
+	conn := NewClientConn(":10000")
+
+	client := arxpb.NewArxClient(conn)
 
 	ctx := context.TODO()
-
 	testDescription := "Afternoon Delight"
 
 	ckr := arxpb.CreateKeyRequest{Description: testDescription}
 
-	km, err := server.CreateKey(ctx, &ckr)
+	km, err := client.CreateKey(ctx, &ckr)
+
+	t.Logf("CreateKey - KeyMetadata: %v", km)
+
 	require.NoError(t, err)
 	require.NotNil(t, km)
 	require.Equal(t, km.Description, testDescription)
@@ -69,27 +83,30 @@ func Test_CreateKey_Success(t *testing.T) {
 	require.NoError(t, err)
 	require.WithinDuration(t, time.Now(), createDate, 5*time.Second)
 
+	var collectedKeys []*arxpb.KeyMetadata
+	lkr := arxpb.ListKeysRequest{}
+	stream, err := client.ListKeys(ctx, &lkr)
+	require.NoError(t, err)
+	for {
+		km, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			require.NoError(t, err)
+		}
+
+		t.Log(km)
+		collectedKeys = append(collectedKeys, km)
+	}
+	require.Len(t, collectedKeys, 1)
 }
 
-func Test_ListKeys_Success(t *testing.T) {
-	SetUpSuite(t)
-
-	server := newServer()
-
-	ctx := context.TODO()
-
-	testDescription := "Stamos"
-
-	ckr := arxpb.CreateKeyRequest{Description: testDescription}
-
-	km, err := server.CreateKey(ctx, &ckr)
-	require.NoError(t, err)
-	require.NotNil(t, km)
-	require.Equal(t, km.Description, testDescription)
-	require.NotEmpty(t, km.KeyID)
-	require.True(t, km.Enabled)
-	createDate, err := time.Parse(time.RFC3339Nano, km.CreationDate_RFC3339Nano)
-	require.NoError(t, err)
-	require.WithinDuration(t, time.Now(), createDate, 5*time.Second)
-
+// NewClientConn creates a gRPC client connection to addr.
+func NewClientConn(addr string) *grpc.ClientConn {
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		grpclog.Fatalf("NewClientConn(%q) failed to create a ClientConn %v", addr, err)
+	}
+	return conn
 }
