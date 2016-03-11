@@ -12,6 +12,34 @@ service arx {
   // Stream a list of keys back to the client
   //
   rpc ListKeys(ListKeysRequest) returns (stream KeyMetadata) {}
+  //
+  // Rotate a key
+  // 
+  rpc RotateKey(RotateKeyRequest) returns (KeyMetadata) {}
+  //
+  // Enable a key
+  // 
+  rpc EnableKey(EnableKeyRequest) returns (KeyMetadata) {}
+  //
+  // Disable a key
+  // 
+  rpc DisableKey(DisableKeyRequest) returns (KeyMetadata) {}
+  //
+  // Generate a data key
+  // 
+  rpc GenerateDataKey(GenerateDataKeyRequest) returns (GenerateDataKeyResponse) {}
+  //
+  // Encrypt data
+  // 
+  rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
+  //
+  // Decrypt data
+  // 
+  rpc Decrypt(DecryptRequest) returns (DecryptResponse) {}
+  //
+  // ReEncrypt data
+  // 
+  rpc ReEncrypt(ReEncryptRequest) returns (ReEncryptResponse) {}
 }
 
 // KeyMetadata is a representation of an Encryption Key
@@ -27,4 +55,65 @@ message CreateKeyRequest {
   string Description = 1;
 }
 
+// ListKeysRequest will stream a list of available keys back to the user
 message ListKeysRequest {}  
+
+// RotateKeyRequest will rotate a key
+message RotateKeyRequest {
+  string KeyID = 1;
+}
+
+// EnableKeyRequest will enable a key
+message EnableKeyRequest {
+  string KeyID = 1;
+}
+
+// DisableKeyRequest will disable a key
+message DisableKeyRequest {
+  string KeyID = 1;
+}
+
+// GenerateDataKeyRequest will request a new data key
+message GenerateDataKeyRequest {
+  string KeyID  = 1;
+}
+
+// GenerateDataKeyResponse ...
+message GenerateDataKeyResponse {
+  bytes Plaintext = 1; 
+  bytes CiphertextBlob = 2; 
+}
+
+// EncryptRequest ...
+message EncryptRequest {
+  string KeyID = 1;   
+  bytes Plaintext = 2;
+}
+
+// EncryptResponse ...
+message EncryptResponse {
+  bytes CiphertextBlob = 1;
+}
+
+// DecryptRequest ...
+message DecryptRequest {
+  bytes CiphertextBlob = 1;
+}
+
+// DecryptResponse ...
+message DecryptResponse {
+  bytes Plaintext = 1;
+}
+
+// ReEncryptRequest ...
+message ReEncryptRequest {
+  bytes CiphertextBlob = 1;
+  string DestinationKeyID = 2;
+}
+
+// ReEncryptResponse ...
+message ReEncryptResponse {
+  bytes CiphertextBlob = 1;
+  string KeyID = 2;      
+  string SourceKeyID = 3;     
+}

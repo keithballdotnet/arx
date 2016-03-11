@@ -100,6 +100,9 @@ func Test_Success(t *testing.T) {
 		collectedKeys = append(collectedKeys, km)
 	}
 	require.Len(t, collectedKeys, 1)
+
+	err := conn.Close()
+	require.NoError(err)
 }
 
 // NewClientConn creates a gRPC client connection to addr.
