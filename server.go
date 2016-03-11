@@ -17,6 +17,7 @@ import (
 
 	"google.golang.org/grpc/credentials"
 
+	"github.com/keithballdotnet/arx/crypto"
 	"github.com/keithballdotnet/arx/kms"
 	arxpb "github.com/keithballdotnet/arx/proto"
 )
@@ -45,7 +46,7 @@ func Exit(messages string, errorCode int) {
 type arxServer struct {
 }
 
-// CreateGroup
+// CreateKey
 func (s *arxServer) CreateKey(ctx context.Context, in *arxpb.CreateKeyRequest) (*arxpb.KeyMetadata, error) {
 
 	log.Infof("CreateKey Start: %v", ctx)
@@ -61,6 +62,118 @@ func (s *arxServer) CreateKey(ctx context.Context, in *arxpb.CreateKeyRequest) (
 	return km, nil
 }
 
+// EnableKey
+func (s *arxServer) EnableKey(ctx context.Context, in *arxpb.EnableKeyRequest) (*arxpb.KeyMetadata, error) {
+
+	log.Infof("EnableKey Start: %v", ctx)
+
+	key, err := kms.KmsCrypto.EnableKey(ctx, in.KeyID)
+	if err != nil {
+		log.Errorf("EnableKey: %v", err)
+		return nil, err
+	}
+
+	km := convertKey(&key)
+
+	return km, nil
+}
+
+// DisableKey
+func (s *arxServer) DisableKey(ctx context.Context, in *arxpb.DisableKeyRequest) (*arxpb.KeyMetadata, error) {
+
+	log.Infof("DisableKey Start: %v", ctx)
+
+	key, err := kms.KmsCrypto.DisableKey(ctx, in.KeyID)
+	if err != nil {
+		log.Errorf("DisableKey: %v", err)
+		return nil, err
+	}
+
+	km := convertKey(&key)
+
+	return km, nil
+}
+
+// RotateKey
+func (s *arxServer) RotateKey(ctx context.Context, in *arxpb.RotateKeyRequest) (*arxpb.RotateKeyResponse, error) {
+
+	log.Infof("RotateKey Start: %v", ctx)
+
+	err := kms.KmsCrypto.RotateKey(ctx, in.KeyID)
+	if err != nil {
+		log.Errorf("RotateKey: %v", err)
+		return nil, err
+	}
+
+	rkr := arxpb.RotateKeyResponse{Success: true}
+
+	return &rkr, nil
+}
+
+// GenerateDataKey
+func (s *arxServer) GenerateDataKey(ctx context.Context, in *arxpb.GenerateDataKeyRequest) (*arxpb.GenerateDataKeyResponse, error) {
+
+	log.Infof("GenerateDataKey Start: %v", ctx)
+
+	// Create a new key
+	aesKey := crypto.GenerateAesKey()
+
+	// Encrypt the key with the master key
+	encryptedData, err := kms.KmsCrypto.Encrypt(ctx, aesKey, in.KeyID)
+	if err != nil {
+		return nil, err
+	}
+
+	rkr := arxpb.GenerateDataKeyResponse{Plaintext: aesKey, CiphertextBlob: encryptedData}
+
+	return &rkr, nil
+}
+
+// Encrypt
+func (s *arxServer) Encrypt(ctx context.Context, in *arxpb.EncryptRequest) (*arxpb.EncryptResponse, error) {
+
+	log.Infof("Encrypt Start: %v", ctx)
+
+	// Encrypt the data with the key specified and return the encrypted data
+	encryptedData, err := kms.KmsCrypto.Encrypt(ctx, in.Plaintext, in.KeyID)
+	if err != nil {
+		return nil, err
+	}
+
+	rkr := arxpb.EncryptResponse{CiphertextBlob: encryptedData}
+
+	return &rkr, nil
+}
+
+// Decrypt
+func (s *arxServer) Decrypt(ctx context.Context, in *arxpb.DecryptRequest) (*arxpb.DecryptResponse, error) {
+
+	log.Infof("Decrypt Start: %v", ctx)
+
+	// Decrypt
+	decryptedData, _, err := kms.KmsCrypto.Decrypt(ctx, in.CiphertextBlob)
+	if err != nil {
+		return nil, err
+	}
+
+	return &arxpb.DecryptResponse{Plaintext: decryptedData}, nil
+}
+
+// ReEncrypt
+func (s *arxServer) ReEncrypt(ctx context.Context, in *arxpb.ReEncryptRequest) (*arxpb.ReEncryptResponse, error) {
+
+	log.Infof("ReEncrypt Start: %v", ctx)
+
+	// Reencrypt the data
+	ciphertextBlob, sourceKeyID, err := kms.KmsCrypto.ReEncrypt(ctx, in.CiphertextBlob, in.DestinationKeyID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &arxpb.ReEncryptResponse{CiphertextBlob: ciphertextBlob, KeyID: in.DestinationKeyID, SourceKeyID: sourceKeyID}, nil
+}
+
+// ListKeys
 func (s *arxServer) ListKeys(in *arxpb.ListKeysRequest, stream arxpb.Arx_ListKeysServer) error {
 	ctx := stream.Context()
 

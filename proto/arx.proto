@@ -15,7 +15,7 @@ service arx {
   //
   // Rotate a key
   // 
-  rpc RotateKey(RotateKeyRequest) returns (KeyMetadata) {}
+  rpc RotateKey(RotateKeyRequest) returns (RotateKeyResponse) {}
   //
   // Enable a key
   // 
@@ -61,6 +61,11 @@ message ListKeysRequest {}
 // RotateKeyRequest will rotate a key
 message RotateKeyRequest {
   string KeyID = 1;
+}
+
+// RotateKeyResponse will rotate a key
+message RotateKeyResponse {
+  bool Success = 1;
 }
 
 // EnableKeyRequest will enable a key
