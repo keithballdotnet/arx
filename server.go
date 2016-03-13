@@ -211,18 +211,13 @@ func main() {
 
 	var err error
 	// Select the storage provider
-	/*switch Config["ARX_STORAGE_PROVIDER"] {
+	switch Config["ARX_STORAGE_PROVIDER"] {
 	case "disk":
 		kms.Storage, err = kms.NewDiskStorageProvider()
 	case "cb":
 		kms.Storage, err = kms.NewCouchbaseStorageProvider()
 	default:
 		kms.Storage, err = kms.NewDiskStorageProvider()
-	}*/
-
-	kms.Storage, err = kms.NewDiskStorageProvider()
-	if err != nil {
-		Exit(fmt.Sprintf("Problem creating storage provider: %v", err), 2)
 	}
 
 	kms.MasterKeyStore, err = kms.NewArxMasterKeyProvider()
