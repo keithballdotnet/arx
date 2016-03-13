@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	log "github.com/golang/glog"
@@ -23,10 +25,11 @@ import (
 )
 
 var (
-	tls      = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
-	certFile = flag.String("cert_file", "testdata/server1.pem", "The TLS cert file")
-	keyFile  = flag.String("key_file", "testdata/server1.key", "The TLS key file")
-	port     = flag.Int("port", 10000, "The server port")
+	tls        = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
+	certFile   = flag.String("cert_file", "testdata/server1.pem", "The TLS cert file")
+	keyFile    = flag.String("key_file", "testdata/server1.key", "The TLS key file")
+	port       = flag.Int("port", 10000, "The server port")
+	passphrase = flag.String("phrase", "", "Master key passphrase")
 )
 
 // Exit will return an error code and the reason to the os
@@ -40,6 +43,7 @@ func Exit(messages string, errorCode int) {
 	}
 
 	log.Infof("%s %s\n", prefix[errorCode], messages)
+
 	os.Exit(errorCode)
 }
 
@@ -209,6 +213,9 @@ func newServer() *arxServer {
 
 func main() {
 
+	flag.Parse()
+	flag.Set("logtostderr", "true")
+
 	storeProvider := os.Getenv("ARX_STORAGE_PROVIDER")
 
 	var err error
@@ -222,10 +229,12 @@ func main() {
 		kms.Storage, err = kms.NewDiskStorageProvider()
 	}
 
-	kms.MasterKeyStore, err = kms.NewArxMasterKeyProvider()
+	masterKeyStore, err := kms.NewArxMasterKeyProvider()
 	if err != nil {
 		Exit(fmt.Sprintf("Problem creating master key provider: %v", err), 2)
 	}
+	masterKeyStore.Passphrase(*passphrase)
+	kms.MasterKeyStore = masterKeyStore
 
 	// Create the KMS Crypto Provider
 	kms.KmsCrypto, err = kms.NewDefaultCryptoProvider()
@@ -233,9 +242,14 @@ func main() {
 		Exit(fmt.Sprintf("Problem creating crypto provider: %v", err), 2)
 	}
 
-	flag.Parse()
-	addr, _ := startServer(fmt.Sprintf(":%d", *port))
+	addr, stopFunc := startServer(fmt.Sprintf(":%d", *port))
 	log.Infof("Started Arx RPC server: %s", addr)
+
+	// Wait for close
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
+	log.Infoln(<-ch)
+	stopFunc()
 }
 
 func startServer(addr string) (string, func()) {

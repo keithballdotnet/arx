@@ -6,7 +6,6 @@ package kms
 
 import (
 	"fmt"
-	"os"
 
 	log "github.com/golang/glog"
 
@@ -24,17 +23,20 @@ func NewArxMasterKeyProvider() (*ArxMasterKeyProvider, error) {
 
 	log.Infoln("Using ArxMasterKeyProvider...")
 
-	passphrase := os.Getenv("ARX_PASSPHRASE")
+	return &ArxMasterKeyProvider{}, nil
+}
 
-	return &ArxMasterKeyProvider{passphrase: passphrase}, nil
+// Passphrase sets the provider pass phrase
+func (mkp *ArxMasterKeyProvider) Passphrase(passphrase string) {
+	mkp.passphrase = passphrase
 }
 
 // GetKey will return the master key
-func (mkp ArxMasterKeyProvider) GetKey(ctx context.Context) ([]byte, error) {
+func (mkp *ArxMasterKeyProvider) GetKey(ctx context.Context) ([]byte, error) {
 
 	// Derive key from pass phrase
 	if len([]rune(mkp.passphrase)) < 30 {
-		return nil, fmt.Errorf("The pass phrase must be at least 30 characters long is only %v characters", len([]rune(mkp.passphrase)))
+		return nil, fmt.Errorf("The passphrase must be at least 30 characters long is only %v characters. Set using -p.", len([]rune(mkp.passphrase)))
 	}
 
 	// The salt used for KDF
