@@ -14,14 +14,13 @@ import (
 )
 
 func SetUpCouchbaseProvider(t *testing.T) {
-
-	err := os.Setenv("ARX_PASSPHRASE", "A long passphrase that will be used to generate the master key")
-	require.NoError(t, err)
-
+	var err error
 	Storage, err = NewCouchbaseStorageProvider()
 	require.NoError(t, err)
-	MasterKeyStore, err = NewArxMasterKeyProvider()
+	arxMKS, err := NewArxMasterKeyProvider()
 	require.NoError(t, err)
+	arxMKS.Passphrase("A long passphrase that will be used to generate the master key")
+	MasterKeyStore = arxMKS
 	KmsCrypto, err = NewDefaultCryptoProvider()
 	require.NoError(t, err)
 }
@@ -35,16 +34,16 @@ func TestCouchbaseProvider(t *testing.T) {
 
 func SetUpDiskProvider(t *testing.T) {
 
-	err := os.Setenv("ARX_PASSPHRASE", "A long passphrase that will be used to generate the master key")
-	require.NoError(t, err)
 	temp, err := ioutil.TempDir("", "kms_test")
 	err = os.Setenv("ARX_PATH", temp)
 	require.NoError(t, err)
 
 	Storage, err = NewDiskStorageProvider()
 	require.NoError(t, err)
-	MasterKeyStore, err = NewArxMasterKeyProvider()
+	arxMKS, err := NewArxMasterKeyProvider()
 	require.NoError(t, err)
+	arxMKS.Passphrase("A long passphrase that will be used to generate the master key")
+	MasterKeyStore = arxMKS
 	KmsCrypto, err = NewDefaultCryptoProvider()
 	require.NoError(t, err)
 }
