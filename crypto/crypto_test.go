@@ -30,6 +30,9 @@ func TestHash(t *testing.T) {
 	// No panic on empty
 	require.False(t, ValidateMd5Checksum([]byte(""), []byte("")))
 
+	md5String := ComputeMd5ChecksumString(input)
+	require.NotEmpty(t, md5String)
+
 	ourSha256 := ComputeSha256Checksum(input)
 	require.True(t, ValidateSha256Checksum(input, ourSha256))
 
@@ -41,9 +44,12 @@ func TestHash(t *testing.T) {
 	// Ensure is the same as out previous hash
 	firstHashString := hex.EncodeToString(ourSha256)
 
-	//c.Logf("Comparing %s to %s", firstHashString, sha256AsString)
-
 	require.Equal(t, firstHashString, sha256AsString)
+
+	buf := bytes.NewBuffer(input)
+
+	streamHash := GetSha256HashStringFromStream(buf)
+	require.Equal(t, streamHash, sha256AsString)
 }
 
 func TestGetRandomNumber(t *testing.T) {
