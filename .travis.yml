@@ -1,3 +1,13 @@
+before_install:
+  # Couchbase Server
+  - sudo wget http://packages.couchbase.com/releases/3.0.1/couchbase-server-community_3.0.1-debian7_amd64.deb
+  - sudo dpkg -i couchbase-server-community_3.0.1-debian7_amd64.deb
+  - sudo service couchbase-server start
+  # Wait until started
+  - while ! echo exit | nc localhost 8091; do sleep 10; done
+  # Setup Bucket for test
+  - /opt/couchbase/bin/couchbase-cli bucket-create -c 127.0.0.1:8091 --bucket=kms --bucket-password= --bucket-type=couchbase --bucket-port=11211 --bucket-ramsize=100 --bucket-replica=0 -u Administrator -p password
+
 language: go
 
 go:
