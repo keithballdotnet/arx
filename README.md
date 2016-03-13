@@ -77,6 +77,8 @@ Upon a request for decryption the data envelope will be inspected, the encrypted
 ## Todo
 + Key Pairs auth
 + Some other auth modes
++ Key audit logs
++ Diagnostics
 
 ## Protobuf Development Set Up
 ### Install protobuf

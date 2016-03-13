@@ -209,9 +209,11 @@ func newServer() *arxServer {
 
 func main() {
 
+	storeProvider := os.Getenv("ARX_STORAGE_PROVIDER")
+
 	var err error
 	// Select the storage provider
-	switch Config["ARX_STORAGE_PROVIDER"] {
+	switch storeProvider {
 	case "disk":
 		kms.Storage, err = kms.NewDiskStorageProvider()
 	case "cb":

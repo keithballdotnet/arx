@@ -20,21 +20,21 @@ type ArxMasterKeyProvider struct {
 }
 
 // NewArxMasterKeyProvider ...
-func NewArxMasterKeyProvider() (ArxMasterKeyProvider, error) {
+func NewArxMasterKeyProvider() (*ArxMasterKeyProvider, error) {
 
 	log.Infoln("Using ArxMasterKeyProvider...")
 
 	passphrase := os.Getenv("ARX_PASSPHRASE")
 
-	return ArxMasterKeyProvider{passphrase: passphrase}, nil
+	return &ArxMasterKeyProvider{passphrase: passphrase}, nil
 }
 
 // GetKey will return the master key
 func (mkp ArxMasterKeyProvider) GetKey(ctx context.Context) ([]byte, error) {
 
 	// Derive key from pass phrase
-	if len(mkp.passphrase) < 30 {
-		return nil, fmt.Errorf("The pass phrase must be at least 30 characters long is only %v characters", len(mkp.passphrase))
+	if len([]rune(mkp.passphrase)) < 30 {
+		return nil, fmt.Errorf("The pass phrase must be at least 30 characters long is only %v characters", len([]rune(mkp.passphrase)))
 	}
 
 	// The salt used for KDF

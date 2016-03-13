@@ -28,15 +28,15 @@ type DefaultCryptoProvider struct {
 }
 
 // NewDefaultCryptoProvider ...
-func NewDefaultCryptoProvider() (DefaultCryptoProvider, error) {
+func NewDefaultCryptoProvider() (*DefaultCryptoProvider, error) {
 	log.Infoln("Using default KMS crypto provider...")
 
 	key, err := MasterKeyStore.GetKey(nil)
 	if err != nil {
-		return DefaultCryptoProvider{}, errors.New("unable to get master key")
+		return nil, fmt.Errorf("Unable to get MasterKey: %v", err)
 	}
 
-	return DefaultCryptoProvider{MasterKey: key}, nil
+	return &DefaultCryptoProvider{MasterKey: key}, nil
 }
 
 // EnableKey - will mark a key as enabled
