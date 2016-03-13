@@ -14,23 +14,23 @@ import (
 	"golang.org/x/net/context"
 )
 
-// GoKMSMasterKeyProvider is an implementation of aquiring a MASTER key using a derived key
-type GoKMSMasterKeyProvider struct {
+// ArxMasterKeyProvider is an implementation of aquiring a MASTER key using a derived key
+type ArxMasterKeyProvider struct {
 	passphrase string
 }
 
-// NewGoKMSMasterKeyProvider ...
-func NewGoKMSMasterKeyProvider() (GoKMSMasterKeyProvider, error) {
+// NewArxMasterKeyProvider ...
+func NewArxMasterKeyProvider() (ArxMasterKeyProvider, error) {
 
-	log.Infoln("Using GoKMSMasterKeyProvider...")
+	log.Infoln("Using ArxMasterKeyProvider...")
 
-	passphrase := os.Getenv("GOKMS_PASSPHRASE")
+	passphrase := os.Getenv("ARX_PASSPHRASE")
 
-	return GoKMSMasterKeyProvider{passphrase: passphrase}, nil
+	return ArxMasterKeyProvider{passphrase: passphrase}, nil
 }
 
 // GetKey will return the master key
-func (mkp GoKMSMasterKeyProvider) GetKey(ctx context.Context) ([]byte, error) {
+func (mkp ArxMasterKeyProvider) GetKey(ctx context.Context) ([]byte, error) {
 
 	// Derive key from pass phrase
 	if len(mkp.passphrase) < 30 {

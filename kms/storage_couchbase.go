@@ -25,11 +25,11 @@ type CouchbaseStorageProvider struct {
 // NewCouchbaseStorageProvider ...
 func NewCouchbaseStorageProvider() (CouchbaseStorageProvider, error) {
 
-	cbhost := os.Getenv("GOKMS_CBHOST")
+	cbhost := os.Getenv("ARX_CBHOST")
 	if cbhost == "" {
 		cbhost = "http://localhost:8091"
 	}
-	cbbuket := os.Getenv("GOKMS_CBBUCKET")
+	cbbuket := os.Getenv("ARX_CBBUCKET")
 	if cbbuket == "" {
 		cbbuket = "kms"
 	}
@@ -64,7 +64,7 @@ type SecretIDList struct {
 // SaveKey - Persist a key to disk
 func (sp CouchbaseStorageProvider) SaveKey(ctx context.Context, keyID string, data []byte, overwrite bool) error {
 
-	keyPath := "gokms:key:" + keyID
+	keyPath := "arx:key:" + keyID
 
 	log.Infof("SaveKey: %v", keyPath)
 
@@ -93,7 +93,7 @@ func (sp CouchbaseStorageProvider) SaveKey(ctx context.Context, keyID string, da
 
 	var keyList KeyIDList
 	// Get key list
-	_, err := sp.bucket.Get("gokms:keylist", &keyList)
+	_, err := sp.bucket.Get("arx:keylist", &keyList)
 
 	log.Infof("Add key got keylist: %v", keyList)
 
@@ -117,7 +117,7 @@ func (sp CouchbaseStorageProvider) SaveKey(ctx context.Context, keyID string, da
 	log.Infof("Setting keylist: %v", keyList)
 
 	// Preseve the key list
-	_, err = sp.bucket.Upsert("gokms:keylist", keyList, 0)
+	_, err = sp.bucket.Upsert("arx:keylist", keyList, 0)
 	if err != nil {
 		log.Infof("Error setting key list: %v", err)
 	}
@@ -142,7 +142,7 @@ func (sp CouchbaseStorageProvider) GetKey(ctx context.Context, keyID string) ([]
 		return nil, errors.New("No couchbase bucket!")
 	}
 
-	keyPath := "gokms:key:" + keyID
+	keyPath := "arx:key:" + keyID
 
 	log.Infof("GetKey: %v", keyPath)
 
@@ -157,7 +157,7 @@ func (sp CouchbaseStorageProvider) GetKey(ctx context.Context, keyID string) ([]
 func (sp CouchbaseStorageProvider) ListCustomerKeyIDs(ctx context.Context) ([]string, error) {
 	var keyList KeyIDList
 	// Get key list
-	_, err := sp.bucket.Get("gokms:keylist", &keyList)
+	_, err := sp.bucket.Get("arx:keylist", &keyList)
 	if err != nil {
 		return nil, err
 	}

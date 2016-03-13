@@ -211,7 +211,7 @@ func main() {
 
 	var err error
 	// Select the storage provider
-	/*switch Config["GOKMS_STORAGE_PROVIDER"] {
+	/*switch Config["ARX_STORAGE_PROVIDER"] {
 	case "disk":
 		kms.Storage, err = kms.NewDiskStorageProvider()
 	case "cb":
@@ -225,18 +225,7 @@ func main() {
 		Exit(fmt.Sprintf("Problem creating storage provider: %v", err), 2)
 	}
 
-	// Which master key provider should we use?
-	/*switch Config["GOKMS_MASTERKEY_PROVIDER"] {
-	case "gokms":
-		kms.MasterKeyStore, err = kms.NewGoKMSMasterKeyProvider()
-	case "hsm":
-		// Create crypto provider
-		//MasterKeyStore, err = NewHSMMasterKeyProvider()
-	default:
-		kms.MasterKeyStore, err = kms.NewGoKMSMasterKeyProvider()
-	}*/
-
-	kms.MasterKeyStore, err = kms.NewGoKMSMasterKeyProvider()
+	kms.MasterKeyStore, err = kms.NewArxMasterKeyProvider()
 	if err != nil {
 		Exit(fmt.Sprintf("Problem creating master key provider: %v", err), 2)
 	}

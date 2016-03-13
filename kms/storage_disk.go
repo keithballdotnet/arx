@@ -24,7 +24,7 @@ type DiskStorageProvider struct {
 // NewDiskStorageProvider ...
 func NewDiskStorageProvider() (DiskStorageProvider, error) {
 
-	path := os.Getenv("GOKMS_PATH")
+	path := os.Getenv("ARX_PATH")
 
 	log.Infof("Using DiskStorageProvider - Disk Path: %v", path)
 

@@ -24,31 +24,21 @@ import (
 
 func setUp(t *testing.T) {
 
-	err := os.Setenv("GOKMS_HSM_SLOT_PASSWORD", "1234")
-	require.NoError(t, err)
-
-	err = os.Setenv("GOKMS_PASSPHRASE", "A long passphrase that will be used to generate the master key")
+	err := os.Setenv("ARX_PASSPHRASE", "A long passphrase that will be used to generate the master key")
 	require.NoError(t, err)
 	temp, err := ioutil.TempDir("", "kms_test")
-	err = os.Setenv("GOKMS_PATH", temp)
+	err = os.Setenv("ARX_PATH", temp)
 	require.NoError(t, err)
 
-	// Need to be set to pass test
-	err = os.Setenv("GOKMS_SSL_CERT", "../files/auth.key")
-	require.NoError(t, err)
-	err = os.Setenv("GOKMS_SSL_KEY", "../files/auth.key")
+	err = os.Setenv("ARX_STORAGE_PROVIDER", "disk")
 	require.NoError(t, err)
 
-	//os.Setenv("GOKMS_STORAGE_PROVIDER", "disk")
-	err = os.Setenv("GOKMS_STORAGE_PROVIDER", "disk")
-	require.NoError(t, err)
-
-	err = os.Setenv("GOKMS_AUTH_KEY", "e7yflbeeid26rredmwtbiyzxijzak6altcnrsi4yol2f5sexbgdwevlpgosfoeyy")
+	err = os.Setenv("ARX_AUTH_KEY", "e7yflbeeid26rredmwtbiyzxijzak6altcnrsi4yol2f5sexbgdwevlpgosfoeyy")
 	require.NoError(t, err)
 
 	kms.Storage, err = kms.NewDiskStorageProvider()
 	require.NoError(t, err)
-	kms.MasterKeyStore, err = kms.NewGoKMSMasterKeyProvider()
+	kms.MasterKeyStore, err = kms.NewArxMasterKeyProvider()
 	require.NoError(t, err)
 	kms.KmsCrypto, err = kms.NewDefaultCryptoProvider()
 	require.NoError(t, err)
