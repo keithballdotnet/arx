@@ -25,11 +25,12 @@ import (
 )
 
 var (
-	tls        = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
-	certFile   = flag.String("cert_file", "testdata/server1.pem", "The TLS cert file")
-	keyFile    = flag.String("key_file", "testdata/server1.key", "The TLS key file")
-	port       = flag.Int("port", 10000, "The server port")
-	passphrase = flag.String("phrase", "", "Master key passphrase")
+	tls             = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
+	certFile        = flag.String("cert_file", "testdata/server1.pem", "The TLS cert file")
+	keyFile         = flag.String("key_file", "testdata/server1.key", "The TLS key file")
+	port            = flag.Int("port", 10000, "The server port")
+	passphrase      = flag.String("phrase", "", "Master key passphrase")
+	storageProvider = flag.String("sp", "disk", "Storage provider (disk|cb - Default is disk)")
 )
 
 // Exit will return an error code and the reason to the os
@@ -216,17 +217,18 @@ func main() {
 	flag.Parse()
 	flag.Set("logtostderr", "true")
 
-	storeProvider := os.Getenv("ARX_STORAGE_PROVIDER")
-
 	var err error
 	// Select the storage provider
-	switch storeProvider {
+	switch *storageProvider {
 	case "disk":
 		kms.Storage, err = kms.NewDiskStorageProvider()
 	case "cb":
 		kms.Storage, err = kms.NewCouchbaseStorageProvider()
 	default:
-		kms.Storage, err = kms.NewDiskStorageProvider()
+		Exit("You must give a storage provider", 2)
+	}
+	if err != nil {
+		Exit(fmt.Sprintf("Problem creating storage provider: %v", err), 2)
 	}
 
 	masterKeyStore, err := kms.NewArxMasterKeyProvider()

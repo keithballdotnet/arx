@@ -36,10 +36,6 @@ go get github.com/keithballdotnet/arx
 
 You need to set the following variables:
 
-```
-export ARX_STORAGE_PROVIDER=disk|cb
-```
-
 For couchbase key storage use:
 ```
 export ARX_CBHOST=
@@ -49,7 +45,6 @@ export ARX_CBBUCKET
 
 For disk key storage use:
 ```
-
 export ARX_PATH=/path/to/keys
 
 ```
@@ -57,6 +52,8 @@ export ARX_PATH=/path/to/keys
 ## AWS Style Key Management Service
 
 The encryption follows the pattern as specified in the in the [KMS Cryptographic Whitepaper](https://d0.awsstatic.com/whitepapers/KMS-Cryptographic-Details.pdf).
+
+![](keyheirarchy.png?raw=true)
 
 For each peice of data that needs encryption a new DataKey will be requested from KMS.  The key will return an encrypted version of the key and a plaintext version of the key.  The plaintext version of the key will be used to encrypt the data.  It will be then combined into an envelop of data ready for persistence.
 
