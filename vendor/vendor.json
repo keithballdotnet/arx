@@ -3,6 +3,11 @@
 	"ignore": "test",
 	"package": [
 		{
+			"path": "github.com/codegangsta/cli",
+			"revision": "aca5b047ed14d17224157c3434ea93bf6cdaadee",
+			"revisionTime": "2016-03-06T20:12:29-08:00"
+		},
+		{
 			"path": "github.com/couchbase/gocb",
 			"revision": "3d8bf80e4f8ff89799f8a3badf128270c14782fd",
 			"revisionTime": "2016-02-20T00:00:47-08:00"

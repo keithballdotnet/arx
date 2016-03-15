@@ -53,7 +53,7 @@ type arxServer struct {
 
 // CreateKey
 func (s *arxServer) CreateKey(ctx context.Context, in *arxpb.CreateKeyRequest) (*arxpb.KeyMetadata, error) {
-
+	start := time.Now()
 	log.Infof("CreateKey Start: %v", ctx)
 
 	key, err := kms.KmsCrypto.CreateKey(ctx, in.Description)
@@ -64,12 +64,14 @@ func (s *arxServer) CreateKey(ctx context.Context, in *arxpb.CreateKeyRequest) (
 
 	km := convertKey(&key)
 
+	log.Infof("CreateKey took: %dms", time.Since(start)/time.Millisecond)
+
 	return km, nil
 }
 
 // EnableKey
 func (s *arxServer) EnableKey(ctx context.Context, in *arxpb.EnableKeyRequest) (*arxpb.KeyMetadata, error) {
-
+	start := time.Now()
 	log.Infof("EnableKey Start: %v", ctx)
 
 	key, err := kms.KmsCrypto.EnableKey(ctx, in.KeyID)
@@ -80,12 +82,14 @@ func (s *arxServer) EnableKey(ctx context.Context, in *arxpb.EnableKeyRequest) (
 
 	km := convertKey(&key)
 
+	log.Infof("EnableKey took: %dms", time.Since(start)/time.Millisecond)
+
 	return km, nil
 }
 
 // DisableKey
 func (s *arxServer) DisableKey(ctx context.Context, in *arxpb.DisableKeyRequest) (*arxpb.KeyMetadata, error) {
-
+	start := time.Now()
 	log.Infof("DisableKey Start: %v", ctx)
 
 	key, err := kms.KmsCrypto.DisableKey(ctx, in.KeyID)
@@ -96,12 +100,14 @@ func (s *arxServer) DisableKey(ctx context.Context, in *arxpb.DisableKeyRequest)
 
 	km := convertKey(&key)
 
+	log.Infof("DisableKey took: %dms", time.Since(start)/time.Millisecond)
+
 	return km, nil
 }
 
 // RotateKey
 func (s *arxServer) RotateKey(ctx context.Context, in *arxpb.RotateKeyRequest) (*arxpb.RotateKeyResponse, error) {
-
+	start := time.Now()
 	log.Infof("RotateKey Start: %v", ctx)
 
 	err := kms.KmsCrypto.RotateKey(ctx, in.KeyID)
@@ -112,12 +118,14 @@ func (s *arxServer) RotateKey(ctx context.Context, in *arxpb.RotateKeyRequest) (
 
 	rkr := arxpb.RotateKeyResponse{Success: true}
 
+	log.Infof("RotateKey took: %dms", time.Since(start)/time.Millisecond)
+
 	return &rkr, nil
 }
 
 // GenerateDataKey
 func (s *arxServer) GenerateDataKey(ctx context.Context, in *arxpb.GenerateDataKeyRequest) (*arxpb.GenerateDataKeyResponse, error) {
-
+	start := time.Now()
 	log.Infof("GenerateDataKey Start: %v", ctx)
 
 	// Create a new key
@@ -131,12 +139,14 @@ func (s *arxServer) GenerateDataKey(ctx context.Context, in *arxpb.GenerateDataK
 
 	rkr := arxpb.GenerateDataKeyResponse{Plaintext: aesKey, CiphertextBlob: encryptedData}
 
+	log.Infof("GenerateDataKey took: %dms", time.Since(start)/time.Millisecond)
+
 	return &rkr, nil
 }
 
 // Encrypt
 func (s *arxServer) Encrypt(ctx context.Context, in *arxpb.EncryptRequest) (*arxpb.EncryptResponse, error) {
-
+	start := time.Now()
 	log.Infof("Encrypt Start: %v", ctx)
 
 	// Encrypt the data with the key specified and return the encrypted data
@@ -147,12 +157,14 @@ func (s *arxServer) Encrypt(ctx context.Context, in *arxpb.EncryptRequest) (*arx
 
 	rkr := arxpb.EncryptResponse{CiphertextBlob: encryptedData}
 
+	log.Infof("Encrypt took: %dms", time.Since(start)/time.Millisecond)
+
 	return &rkr, nil
 }
 
 // Decrypt
 func (s *arxServer) Decrypt(ctx context.Context, in *arxpb.DecryptRequest) (*arxpb.DecryptResponse, error) {
-
+	start := time.Now()
 	log.Infof("Decrypt Start: %v", ctx)
 
 	// Decrypt
@@ -161,12 +173,14 @@ func (s *arxServer) Decrypt(ctx context.Context, in *arxpb.DecryptRequest) (*arx
 		return nil, err
 	}
 
+	log.Infof("Decrypt took: %dms", time.Since(start)/time.Millisecond)
+
 	return &arxpb.DecryptResponse{Plaintext: decryptedData}, nil
 }
 
 // ReEncrypt
 func (s *arxServer) ReEncrypt(ctx context.Context, in *arxpb.ReEncryptRequest) (*arxpb.ReEncryptResponse, error) {
-
+	start := time.Now()
 	log.Infof("ReEncrypt Start: %v", ctx)
 
 	// Reencrypt the data
@@ -175,13 +189,15 @@ func (s *arxServer) ReEncrypt(ctx context.Context, in *arxpb.ReEncryptRequest) (
 		return nil, err
 	}
 
+	log.Infof("ReEncrypt took: %dms", time.Since(start)/time.Millisecond)
+
 	return &arxpb.ReEncryptResponse{CiphertextBlob: ciphertextBlob, KeyID: in.DestinationKeyID, SourceKeyID: sourceKeyID}, nil
 }
 
 // ListKeys
 func (s *arxServer) ListKeys(in *arxpb.ListKeysRequest, stream arxpb.Arx_ListKeysServer) error {
 	ctx := stream.Context()
-
+	start := time.Now()
 	log.Infof("ListKeys Start: %v", ctx)
 
 	keys, err := kms.KmsCrypto.ListKeys(ctx)
@@ -196,6 +212,9 @@ func (s *arxServer) ListKeys(in *arxpb.ListKeysRequest, stream arxpb.Arx_ListKey
 			return err
 		}
 	}
+
+	log.Infof("ListKeys took: %dms", time.Since(start)/time.Millisecond)
+
 	return nil
 }
 

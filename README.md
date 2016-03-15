@@ -12,9 +12,9 @@ The crypto provider is based on [AES](http://en.wikipedia.org/wiki/Advanced_Encr
 
 Keys are encrypted and stored on disk/couchbase, using a master key which is derived using [PBKDF2](http://en.wikipedia.org/wiki/PBKDF2) from a passphrase when run in pure software mode.
 
-### Alxclient - Command Line Interface
+### Arxclient - Command Line Interface
 
-Alxclient is a command line interface which can be used to manage and interact with arx.
+Arxclient is a command line interface which can be used to manage and interact with arx.
 
 ## Features
 

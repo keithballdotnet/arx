@@ -19,6 +19,7 @@ install:
   - go get github.com/wadey/gocovmerge
 
 script:
+  - go build github.com/keithballdotnet/arx/arxclient
   - go build github.com/keithballdotnet/arx
   - go test -v -covermode=count -coverprofile=kms.coverage.out github.com/keithballdotnet/arx/kms
   - go test -v -covermode=count -coverprofile=crypto.coverage.out github.com/keithballdotnet/arx/crypto	
