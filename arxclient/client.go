@@ -79,6 +79,60 @@ func main() {
 				listKeys(client)
 			},
 		},
+		cli.Command{
+			Name:  "enable",
+			Usage: "enable a key",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "keyid, k",
+					Usage: "The key to enable",
+				},
+			},
+			Action: func(c *cli.Context) {
+				client, err := getClient(c)
+				if err != nil {
+					fmt.Printf("Unable to get client: %v", err)
+					os.Exit(2)
+				}
+				enableKey(client, c.String("keyid"))
+			},
+		},
+		cli.Command{
+			Name:  "disable",
+			Usage: "disable a key",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "keyid, k",
+					Usage: "The key to disable",
+				},
+			},
+			Action: func(c *cli.Context) {
+				client, err := getClient(c)
+				if err != nil {
+					fmt.Printf("Unable to get client: %v", err)
+					os.Exit(2)
+				}
+				disableKey(client, c.String("keyid"))
+			},
+		},
+		cli.Command{
+			Name:  "rotate",
+			Usage: "rotate a key",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "keyid, k",
+					Usage: "The key to rotate",
+				},
+			},
+			Action: func(c *cli.Context) {
+				client, err := getClient(c)
+				if err != nil {
+					fmt.Printf("Unable to get client: %v", err)
+					os.Exit(2)
+				}
+				rotateKey(client, c.String("keyid"))
+			},
+		},
 	}
 
 	app.Run(os.Args)
@@ -116,13 +170,56 @@ func getClient(c *cli.Context) (arxpb.ArxClient, error) {
 	return client, nil
 }
 
+// rotateKey
+func rotateKey(client arxpb.ArxClient, keyid string) {
+	grpclog.Println("Rotate a key")
+
+	ctx := context.TODO()
+
+	rokr := arxpb.RotateKeyRequest{KeyID: km.KeyID}
+	km, err := client.RotateKey(ctx, &rokr)
+	if err != nil {
+		grpclog.Fatalf("%v.RotateKey(_) = _, %v: ", client, err)
+	}
+	grpclog.Println(km)
+}
+
+// disableKey
+func disableKey(client arxpb.ArxClient, keyid string) {
+	grpclog.Println("Disable a key")
+
+	ctx := context.TODO()
+
+	disr := arxpb.DisableKeyRequest{KeyID: keyid}
+	km, err := client.DisableKey(ctx, &disr)
+	if err != nil {
+		grpclog.Fatalf("%v.DisableKey(_) = _, %v: ", client, err)
+	}
+	grpclog.Println(km)
+}
+
+// enableKey
+func enableKey(client arxpb.ArxClient, keyid string) {
+	grpclog.Println("Enable a key")
+
+	ctx := context.TODO()
+
+	enr := arxpb.EnableKeyRequest{KeyID: keyid}
+	enableResult, err := client.EnableKey(ctx, &enr)
+
+	km, err := client.CreateKey(ctx, ckr)
+	if err != nil {
+		grpclog.Fatalf("%v.EnableKey(_) = _, %v: ", client, err)
+	}
+	grpclog.Println(km)
+}
+
 // createKey
 func createKey(client arxpb.ArxClient, description string) {
 	grpclog.Println("Create new key")
 
 	ckr := &arxpb.CreateKeyRequest{Description: description}
 
-	// Create context
 	ctx := context.TODO()
 
 	km, err := client.CreateKey(ctx, ckr)
@@ -135,7 +232,6 @@ func createKey(client arxpb.ArxClient, description string) {
 func listKeys(client arxpb.ArxClient) {
 	grpclog.Println("List keys")
 
-	// Create context
 	ctx := context.TODO()
 
 	lkr := arxpb.ListKeysRequest{}
