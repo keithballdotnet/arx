@@ -44,7 +44,7 @@ func setUp(t *testing.T) {
 func Test_Success(t *testing.T) {
 	setUp(t)
 
-	_, stopServer := startServer(":10000")
+	_, stopServer := startServer(":10000", false, "", "")
 	defer stopServer()
 
 	conn := NewClientConn(":10000")

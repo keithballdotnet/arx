@@ -176,7 +176,7 @@ func rotateKey(client arxpb.ArxClient, keyid string) {
 
 	ctx := context.TODO()
 
-	rokr := arxpb.RotateKeyRequest{KeyID: km.KeyID}
+	rokr := arxpb.RotateKeyRequest{KeyID: keyid}
 	km, err := client.RotateKey(ctx, &rokr)
 	if err != nil {
 		grpclog.Fatalf("%v.RotateKey(_) = _, %v: ", client, err)
@@ -205,9 +205,7 @@ func enableKey(client arxpb.ArxClient, keyid string) {
 	ctx := context.TODO()
 
 	enr := arxpb.EnableKeyRequest{KeyID: keyid}
-	enableResult, err := client.EnableKey(ctx, &enr)
-
-	km, err := client.CreateKey(ctx, ckr)
+	km, err := client.EnableKey(ctx, &enr)
 	if err != nil {
 		grpclog.Fatalf("%v.EnableKey(_) = _, %v: ", client, err)
 	}

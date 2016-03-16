@@ -13,10 +13,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/codegangsta/cli"
 	log "github.com/golang/glog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-
 	"google.golang.org/grpc/credentials"
 
 	"github.com/keithballdotnet/arx/crypto"
@@ -24,31 +24,116 @@ import (
 	arxpb "github.com/keithballdotnet/arx/proto"
 )
 
-var (
-	tls             = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
-	certFile        = flag.String("cert_file", "testdata/server1.pem", "The TLS cert file")
-	keyFile         = flag.String("key_file", "testdata/server1.key", "The TLS key file")
-	port            = flag.Int("port", 10000, "The server port")
-	passphrase      = flag.String("phrase", "", "Master key passphrase")
-	storageProvider = flag.String("sp", "disk", "Storage provider (disk|cb - Default is disk)")
-)
-
-// Exit will return an error code and the reason to the os
-func Exit(messages string, errorCode int) {
-	// Exit code and messages based on Nagios plugin return codes (https://nagios-plugins.org/doc/guidelines.html#AEN78)
-	var prefix = map[int]string{0: "OK", 1: "Warning", 2: "Critical", 3: "Unknown"}
-
-	// Catch all unknown errorCode and convert them to Unknown
-	if errorCode < 0 || errorCode > 3 {
-		errorCode = 3
-	}
-
-	log.Infof("%s %s\n", prefix[errorCode], messages)
-
-	os.Exit(errorCode)
+type arxServer struct {
 }
 
-type arxServer struct {
+func newServer() *arxServer {
+	s := new(arxServer)
+	return s
+}
+
+func main() {
+
+	app := cli.NewApp()
+	app.Author = "Keith Ball"
+	app.Copyright = "2016 - Keith Ball"
+	app.Name = "Arx"
+	app.Version = "1.0"
+	app.Usage = "GRPC Key Management Service"
+
+	app.Flags = []cli.Flag{
+		cli.BoolFlag{
+			Name:  "tls",
+			Usage: "Connection uses TLS if true, else plain TCP",
+		},
+		cli.StringFlag{
+			Name:  "cert_file, c",
+			Value: "testdata/ca.pem",
+			Usage: "The TLS cert file",
+		},
+		cli.StringFlag{
+			Name:  "key_file, k",
+			Value: "testdata/server1.key",
+			Usage: "The TLS key file",
+		},
+		cli.IntFlag{
+			Name:  "port, p",
+			Value: 10000,
+			Usage: "The server port",
+		},
+		cli.StringFlag{
+			Name:  "phrase, ph",
+			Value: "",
+			Usage: "Master key passphrase",
+		},
+		cli.StringFlag{
+			Name:  "storage, s",
+			Value: "disk",
+			Usage: "Storage provider (disk|cb - Default is disk)",
+		},
+	}
+	app.Action = func(c *cli.Context) {
+		flag.Parse()
+		flag.Set("logtostderr", "true")
+		var err error
+		// Select the storage provider
+		switch c.String("storage") {
+		case "disk":
+			kms.Storage, err = kms.NewDiskStorageProvider()
+		case "cb":
+			kms.Storage, err = kms.NewCouchbaseStorageProvider()
+		default:
+			Exit("You must give a storage provider", 2)
+		}
+		if err != nil {
+			Exit(fmt.Sprintf("Problem creating storage provider: %v", err), 2)
+		}
+
+		masterKeyStore, err := kms.NewArxMasterKeyProvider()
+		if err != nil {
+			Exit(fmt.Sprintf("Problem creating master key provider: %v", err), 2)
+		}
+		masterKeyStore.Passphrase(c.String("phrase"))
+		kms.MasterKeyStore = masterKeyStore
+
+		// Create the KMS Crypto Provider
+		kms.KmsCrypto, err = kms.NewDefaultCryptoProvider()
+		if err != nil {
+			Exit(fmt.Sprintf("Problem creating crypto provider: %v", err), 2)
+		}
+
+		addr, stopFunc := startServer(fmt.Sprintf(":%d", c.Int("port")), c.Bool("tls"), c.String("cerFile"), c.String("keyFile"))
+		log.Infof("Started Arx RPC server: %s", addr)
+
+		// Wait for close
+		ch := make(chan os.Signal)
+		signal.Notify(ch, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
+		log.Infoln(<-ch)
+		stopFunc()
+	}
+
+	app.Run(os.Args)
+}
+
+func startServer(addr string, tls bool, certFile, keyFile string) (string, func()) {
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	var opts []grpc.ServerOption
+	if tls {
+		creds, err := credentials.NewServerTLSFromFile(certFile, keyFile)
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
+		opts = []grpc.ServerOption{grpc.Creds(creds)}
+	}
+	s := grpc.NewServer(opts...)
+	arxpb.RegisterArxServer(s, newServer())
+	go s.Serve(lis)
+	return lis.Addr().String(), func() {
+		s.Stop()
+	}
 }
 
 // CreateKey
@@ -226,70 +311,17 @@ func convertKey(km *kms.KeyMetadata) *arxpb.KeyMetadata {
 	return &outkm
 }
 
-func newServer() *arxServer {
-	s := new(arxServer)
-	return s
-}
+// Exit will return an error code and the reason to the os
+func Exit(messages string, errorCode int) {
+	// Exit code and messages based on Nagios plugin return codes (https://nagios-plugins.org/doc/guidelines.html#AEN78)
+	var prefix = map[int]string{0: "OK", 1: "Warning", 2: "Critical", 3: "Unknown"}
 
-func main() {
-
-	flag.Parse()
-	flag.Set("logtostderr", "true")
-
-	var err error
-	// Select the storage provider
-	switch *storageProvider {
-	case "disk":
-		kms.Storage, err = kms.NewDiskStorageProvider()
-	case "cb":
-		kms.Storage, err = kms.NewCouchbaseStorageProvider()
-	default:
-		Exit("You must give a storage provider", 2)
-	}
-	if err != nil {
-		Exit(fmt.Sprintf("Problem creating storage provider: %v", err), 2)
+	// Catch all unknown errorCode and convert them to Unknown
+	if errorCode < 0 || errorCode > 3 {
+		errorCode = 3
 	}
 
-	masterKeyStore, err := kms.NewArxMasterKeyProvider()
-	if err != nil {
-		Exit(fmt.Sprintf("Problem creating master key provider: %v", err), 2)
-	}
-	masterKeyStore.Passphrase(*passphrase)
-	kms.MasterKeyStore = masterKeyStore
+	log.Infof("%s %s\n", prefix[errorCode], messages)
 
-	// Create the KMS Crypto Provider
-	kms.KmsCrypto, err = kms.NewDefaultCryptoProvider()
-	if err != nil {
-		Exit(fmt.Sprintf("Problem creating crypto provider: %v", err), 2)
-	}
-
-	addr, stopFunc := startServer(fmt.Sprintf(":%d", *port))
-	log.Infof("Started Arx RPC server: %s", addr)
-
-	// Wait for close
-	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
-	log.Infoln(<-ch)
-	stopFunc()
-}
-
-func startServer(addr string) (string, func()) {
-	lis, err := net.Listen("tcp", addr)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	var opts []grpc.ServerOption
-	if *tls {
-		creds, err := credentials.NewServerTLSFromFile(*certFile, *keyFile)
-		if err != nil {
-			log.Fatalf("failed to listen: %v", err)
-		}
-		opts = []grpc.ServerOption{grpc.Creds(creds)}
-	}
-	s := grpc.NewServer(opts...)
-	arxpb.RegisterArxServer(s, newServer())
-	go s.Serve(lis)
-	return lis.Addr().String(), func() {
-		s.Stop()
-	}
+	os.Exit(errorCode)
 }

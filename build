@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-echo "Building arx..."
-mkdir -p bin
-go build -o bin/arx .
