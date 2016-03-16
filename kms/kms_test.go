@@ -6,14 +6,21 @@ package kms
 
 import (
 	"bytes"
+	"flag"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"path/filepath"
 
 	"github.com/stretchr/testify/require"
 )
 
 func SetUpCouchbaseProvider(t *testing.T) {
+
+	flag.Parse()
+	flag.Set("logtostderr", "true")
+
 	var err error
 	Storage, err = NewCouchbaseStorageProvider()
 	require.NoError(t, err)
@@ -28,12 +35,15 @@ func SetUpCouchbaseProvider(t *testing.T) {
 func TestCouchbaseProvider(t *testing.T) {
 
 	SetUpCouchbaseProvider(t)
+	defer Storage.Close()
 
-	TestKms(t)
+	DoKMSTest(t)
 }
 
 func SetUpDiskProvider(t *testing.T) {
 
+	flag.Parse()
+	flag.Set("logtostderr", "true")
 	temp, err := ioutil.TempDir("", "kms_test")
 	err = os.Setenv("ARX_PATH", temp)
 	require.NoError(t, err)
@@ -51,16 +61,46 @@ func SetUpDiskProvider(t *testing.T) {
 func TestDiskProvider(t *testing.T) {
 
 	SetUpDiskProvider(t)
+	defer Storage.Close()
 
-	TestKms(t)
+	DoKMSTest(t)
 }
 
-func TestKms(t *testing.T) {
+func SetUpBoltDBProvider(t *testing.T) {
+
+	flag.Parse()
+	flag.Set("logtostderr", "true")
+
+	temp, err := ioutil.TempDir("", "kms_test")
+	err = os.Setenv("ARX_BOLTDB", filepath.Join(temp, "arx.db"))
+	require.NoError(t, err)
+
+	Storage, err = NewBoltStorageProvider()
+	require.NoError(t, err)
+	arxMKS, err := NewArxMasterKeyProvider()
+	require.NoError(t, err)
+	arxMKS.Passphrase("A long passphrase that will be used to generate the master key")
+	MasterKeyStore = arxMKS
+	KmsCrypto, err = NewDefaultCryptoProvider()
+	require.NoError(t, err)
+}
+
+func TestBoltProvider(t *testing.T) {
+
+	SetUpBoltDBProvider(t)
+	defer Storage.Close()
+
+	DoKMSTest(t)
+}
+
+func DoKMSTest(t *testing.T) {
 
 	desc := "A new key description!"
 
 	keyMetadata, err := KmsCrypto.CreateKey(nil, desc)
 	require.NoError(t, err)
+
+	t.Logf("KeyMetadata: %v", keyMetadata)
 
 	require.True(t, desc == keyMetadata.Description)
 	require.True(t, keyMetadata.Enabled)
@@ -68,6 +108,8 @@ func TestKms(t *testing.T) {
 
 	key, err := KmsCrypto.GetKey(nil, keyMetadata.KeyID)
 	require.NoError(t, err)
+
+	t.Logf("key: %v", key)
 
 	// Ensure key is 32 bytes
 	require.True(t, len(key.GetLatest()) == 32)
@@ -87,6 +129,7 @@ func TestKms(t *testing.T) {
 			break
 		}
 	}
+	t.Logf("Keys: %v", keyList)
 
 	require.True(t, keyFoundInList)
 

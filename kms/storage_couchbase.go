@@ -56,11 +56,6 @@ type KeyIDList struct {
 	KeyIDs []string
 }
 
-// SecretIDList - A list of secret IDs
-type SecretIDList struct {
-	SecretIDs []string
-}
-
 // SaveKey - Persist a key to disk
 func (sp CouchbaseStorageProvider) SaveKey(ctx context.Context, keyID string, data []byte, overwrite bool) error {
 
@@ -170,4 +165,9 @@ func (sp CouchbaseStorageProvider) ListCustomerKeyIDs(ctx context.Context) ([]st
 // RawData type for json marshalling
 type RawData struct {
 	Data []byte
+}
+
+// Close will close the connection
+func (sp CouchbaseStorageProvider) Close() {
+	sp.bucket.Close()
 }

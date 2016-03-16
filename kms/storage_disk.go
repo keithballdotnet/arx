@@ -71,3 +71,7 @@ func (sp DiskStorageProvider) ListCustomerKeyIDs(ctx context.Context) ([]string,
 
 	return keyIDs, nil
 }
+
+// Close will do nothing
+func (sp DiskStorageProvider) Close() {
+}

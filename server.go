@@ -88,6 +88,7 @@ func main() {
 		if err != nil {
 			Exit(fmt.Sprintf("Problem creating storage provider: %v", err), 2)
 		}
+		defer kms.Storage.Close()
 
 		masterKeyStore, err := kms.NewArxMasterKeyProvider()
 		if err != nil {

@@ -31,4 +31,5 @@ type StorageProvider interface {
 	SaveKey(ctx context.Context, keyID string, data []byte, overwrite bool) error
 	GetKey(ctx context.Context, keyID string) ([]byte, error)
 	ListCustomerKeyIDs(ctx context.Context) ([]string, error)
+	Close()
 }
