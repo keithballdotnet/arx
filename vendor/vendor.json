@@ -3,6 +3,11 @@
 	"ignore": "test",
 	"package": [
 		{
+			"path": "github.com/boltdb/bolt",
+			"revision": "0fd4c0547d204c7b1cad6db6f3adad5f2cf453e5",
+			"revisionTime": "2016-03-10T12:43:05-07:00"
+		},
+		{
 			"path": "github.com/codegangsta/cli",
 			"revision": "aca5b047ed14d17224157c3434ea93bf6cdaadee",
 			"revisionTime": "2016-03-06T20:12:29-08:00"
