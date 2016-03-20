@@ -2,38 +2,9 @@
 // Copyright (C) 2016 Keith Ball
 // License: GPL3
 
-package kms
+package arx
 
-import (
-	"sort"
-	"time"
-)
-
-// Type of key
-var (
-	CustomerAESKeyType = "aes"
-	MasterKeyType      = "masterkey"
-)
-
-// Key is a represention of a key
-type Key struct {
-	Metadata KeyMetadata
-	Versions []KeyVersion
-}
-
-// KeyMetadata is the associated meta data of any key
-type KeyMetadata struct {
-	KeyID        string
-	CreationDate time.Time
-	Description  string
-	Enabled      bool
-}
-
-// KeyVersion is a version of a key
-type KeyVersion struct {
-	Version int
-	Key     []byte
-}
+import "sort"
 
 // GetLatest will return the latest available key
 func (key *Key) GetLatest() []byte {
@@ -43,7 +14,7 @@ func (key *Key) GetLatest() []byte {
 }
 
 // GetLatestVersion will return the latest version number
-func (key *Key) GetLatestVersion() int {
+func (key *Key) GetLatestVersion() int64 {
 	sort.Sort(KeyByVersion(key.Versions))
 
 	return key.Versions[len(key.Versions)-1].Version
@@ -55,7 +26,7 @@ func (key *Key) GetVersion(version int) []byte {
 }
 
 // KeyByVersion - Will sort the Keys by Version (highest version at top i.e. Version 5 will be 4 in index, v3 index 2)
-type KeyByVersion []KeyVersion
+type KeyByVersion []*KeyVersion
 
 func (a KeyByVersion) Len() int      { return len(a) }
 func (a KeyByVersion) Swap(i, j int) { a[i], a[j] = a[j], a[i] }

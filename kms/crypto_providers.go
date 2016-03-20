@@ -5,7 +5,6 @@
 package kms
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -14,7 +13,9 @@ import (
 
 	log "github.com/golang/glog"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/keithballdotnet/arx/crypto"
+	arxpb "github.com/keithballdotnet/arx/proto"
 	"github.com/satori/go.uuid"
 	"golang.org/x/net/context"
 )
@@ -40,10 +41,10 @@ func NewDefaultCryptoProvider() (*DefaultCryptoProvider, error) {
 }
 
 // EnableKey - will mark a key as enabled
-func (cp DefaultCryptoProvider) EnableKey(ctx context.Context, KeyID string) (KeyMetadata, error) {
+func (cp DefaultCryptoProvider) EnableKey(ctx context.Context, KeyID string) (*arxpb.KeyMetadata, error) {
 	key, err := cp.GetKey(ctx, KeyID)
 	if err != nil {
-		return KeyMetadata{}, err
+		return nil, err
 	}
 
 	key.Metadata.Enabled = true
@@ -51,17 +52,17 @@ func (cp DefaultCryptoProvider) EnableKey(ctx context.Context, KeyID string) (Ke
 	err = cp.SaveKey(ctx, key, true)
 
 	if err != nil {
-		return KeyMetadata{}, err
+		return nil, err
 	}
 
 	return key.Metadata, nil
 }
 
 // DisableKey - will mark a key as disabled
-func (cp DefaultCryptoProvider) DisableKey(ctx context.Context, KeyID string) (KeyMetadata, error) {
+func (cp DefaultCryptoProvider) DisableKey(ctx context.Context, KeyID string) (*arxpb.KeyMetadata, error) {
 	key, err := cp.GetKey(ctx, KeyID)
 	if err != nil {
-		return KeyMetadata{}, err
+		return nil, err
 	}
 
 	key.Metadata.Enabled = false
@@ -69,17 +70,17 @@ func (cp DefaultCryptoProvider) DisableKey(ctx context.Context, KeyID string) (K
 	err = cp.SaveKey(ctx, key, true)
 
 	if err != nil {
-		return KeyMetadata{}, err
+		return nil, err
 	}
 
 	return key.Metadata, nil
 }
 
 // ListKeys will list the available keys
-func (cp DefaultCryptoProvider) ListKeys(ctx context.Context) ([]KeyMetadata, error) {
+func (cp DefaultCryptoProvider) ListKeys(ctx context.Context) ([]*arxpb.KeyMetadata, error) {
 
 	// Create slice of metadata to return
-	var metadata []KeyMetadata
+	var metadata []*arxpb.KeyMetadata
 
 	keyLists, err := Storage.ListCustomerKeyIDs(ctx)
 	if err != nil {
@@ -99,31 +100,32 @@ func (cp DefaultCryptoProvider) ListKeys(ctx context.Context) ([]KeyMetadata, er
 }
 
 // CreateKey will create a new key
-func (cp DefaultCryptoProvider) CreateKey(ctx context.Context, description string) (KeyMetadata, error) {
+func (cp DefaultCryptoProvider) CreateKey(ctx context.Context, description string) (*arxpb.KeyMetadata, error) {
 
 	// Create a new key id
 	keyID := uuid.NewV4().String()
 
 	// Create metadata
-	keyMetadata := KeyMetadata{
-		KeyID:        keyID,
-		Description:  description,
-		CreationDate: time.Now().UTC(),
-		Enabled:      true,
+	keyMetadata := arxpb.KeyMetadata{
+		KeyID:                   keyID,
+		Description:             description,
+		CreationDateRFC3339Nano: time.Now().UTC().Format(time.RFC3339Nano),
+		Enabled:                 true,
 	}
 
 	encKey := crypto.GenerateAesKey()
 
 	// Create new key object
-	key := Key{Metadata: keyMetadata, Versions: []KeyVersion{{Version: 1, Key: encKey}}}
+	version := arxpb.KeyVersion{Version: 1, Key: encKey}
+	key := arxpb.Key{Metadata: &keyMetadata, Versions: []*arxpb.KeyVersion{&version}}
 
 	// Persist the key to disk
-	err := cp.SaveKey(ctx, key, false)
+	err := cp.SaveKey(ctx, &key, false)
 	if err != nil {
-		return KeyMetadata{}, err
+		return nil, err
 	}
 
-	return keyMetadata, nil
+	return &keyMetadata, nil
 }
 
 // RotateKey will create a new version of a key while preserving the old key
@@ -142,17 +144,17 @@ func (cp DefaultCryptoProvider) RotateKey(ctx context.Context, KeyID string) err
 	}
 
 	// Create new key version
-	newKeyVersion := KeyVersion{Version: key.GetLatestVersion() + 1, Key: crypto.GenerateAesKey()}
+	newKeyVersion := arxpb.KeyVersion{Version: key.GetLatestVersion() + 1, Key: crypto.GenerateAesKey()}
 
-	key.Versions = append(key.Versions, newKeyVersion)
+	key.Versions = append(key.Versions, &newKeyVersion)
 
 	return cp.SaveKey(ctx, key, true)
 }
 
 // SaveKey will persist a key to disk
-func (cp DefaultCryptoProvider) SaveKey(ctx context.Context, key Key, add bool) error {
-	// JSON -> byte
-	keyData, err := json.Marshal(key)
+func (cp DefaultCryptoProvider) SaveKey(ctx context.Context, key *arxpb.Key, add bool) error {
+	// proto -> byte
+	keyData, err := proto.Marshal(key)
 	if err != nil {
 		return err
 	}
@@ -173,7 +175,7 @@ func (cp DefaultCryptoProvider) SaveKey(ctx context.Context, key Key, add bool) 
 }
 
 // GetKey from the the store
-func (cp DefaultCryptoProvider) GetKey(ctx context.Context, KeyID string) (Key, error) {
+func (cp DefaultCryptoProvider) GetKey(ctx context.Context, KeyID string) (*arxpb.Key, error) {
 
 	var err error
 	encryptedKey := []byte{}
@@ -182,24 +184,24 @@ func (cp DefaultCryptoProvider) GetKey(ctx context.Context, KeyID string) (Key, 
 	encryptedKey, err = Storage.GetKey(ctx, KeyID)
 	if err != nil {
 		log.Errorf("GetKey() failed %s\n", err)
-		return Key{}, err
+		return nil, err
 	}
 
 	// decrypt the data on disk with the users derived key
 	decryptedData, err := crypto.AesGCMDecrypt(encryptedKey, cp.MasterKey)
 	if err != nil {
 		log.Errorf("GetKey() failed %s\n", err)
-		return Key{}, err
+		return nil, err
 	}
 
-	var key Key
-	err = json.Unmarshal(decryptedData, &key)
+	var key arxpb.Key
+	err = proto.Unmarshal(decryptedData, &key)
 	if err != nil {
 		log.Errorf("GetKey() failed %s\n", err)
-		return Key{}, err
+		return nil, err
 	}
 
-	return key, nil
+	return &key, nil
 }
 
 // ReEncrypt will decrypt with the current key, and rencrypt with the new key id

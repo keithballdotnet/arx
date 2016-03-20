@@ -148,11 +148,9 @@ func (s *arxServer) CreateKey(ctx context.Context, in *arxpb.CreateKeyRequest) (
 		return nil, err
 	}
 
-	km := convertKey(&key)
-
 	log.Infof("CreateKey took: %dms", time.Since(start)/time.Millisecond)
 
-	return km, nil
+	return key, nil
 }
 
 // EnableKey
@@ -166,11 +164,9 @@ func (s *arxServer) EnableKey(ctx context.Context, in *arxpb.EnableKeyRequest) (
 		return nil, err
 	}
 
-	km := convertKey(&key)
-
 	log.Infof("EnableKey took: %dms", time.Since(start)/time.Millisecond)
 
-	return km, nil
+	return key, nil
 }
 
 // DisableKey
@@ -184,11 +180,9 @@ func (s *arxServer) DisableKey(ctx context.Context, in *arxpb.DisableKeyRequest)
 		return nil, err
 	}
 
-	km := convertKey(&key)
-
 	log.Infof("DisableKey took: %dms", time.Since(start)/time.Millisecond)
 
-	return km, nil
+	return key, nil
 }
 
 // RotateKey
@@ -293,8 +287,7 @@ func (s *arxServer) ListKeys(in *arxpb.ListKeysRequest, stream arxpb.Arx_ListKey
 	}
 
 	for _, key := range keys {
-		km := convertKey(&key)
-		if err := stream.Send(km); err != nil {
+		if err := stream.Send(key); err != nil {
 			return err
 		}
 	}
@@ -302,14 +295,6 @@ func (s *arxServer) ListKeys(in *arxpb.ListKeysRequest, stream arxpb.Arx_ListKey
 	log.Infof("ListKeys took: %dms", time.Since(start)/time.Millisecond)
 
 	return nil
-}
-
-func convertKey(km *kms.KeyMetadata) *arxpb.KeyMetadata {
-	outkm := arxpb.KeyMetadata{KeyID: km.KeyID,
-		CreationDate_RFC3339Nano: km.CreationDate.Format(time.RFC3339Nano),
-		Enabled:                  km.Enabled,
-		Description:              km.Description}
-	return &outkm
 }
 
 // Exit will return an error code and the reason to the os

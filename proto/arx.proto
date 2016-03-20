@@ -45,9 +45,21 @@ service arx {
 // KeyMetadata is a representation of an Encryption Key
 message KeyMetadata {
   string KeyID = 1;
-  string CreationDate_RFC3339Nano = 2;
+  string CreationDateRFC3339Nano = 2;
   string Description = 3;
   bool Enabled = 4;
+}
+
+// Key is a represention of a key
+message Key {
+  KeyMetadata Metadata = 1; 
+  repeated KeyVersion Versions = 2;
+}
+
+// KeyVersion is a version of a key
+message KeyVersion {
+  int64 Version = 1;
+  bytes Key = 2;
 }
 
 // CreateKeyRequest will create a key

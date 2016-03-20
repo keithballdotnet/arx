@@ -65,7 +65,7 @@ func Test_Success(t *testing.T) {
 	require.Equal(t, km.Description, testDescription)
 	require.NotEmpty(t, km.KeyID)
 	require.True(t, km.Enabled)
-	createDate, err := time.Parse(time.RFC3339Nano, km.CreationDate_RFC3339Nano)
+	createDate, err := time.Parse(time.RFC3339Nano, km.CreationDateRFC3339Nano)
 	require.NoError(t, err)
 	require.WithinDuration(t, time.Now(), createDate, 5*time.Second)
 

@@ -5,16 +5,23 @@
 package kms
 
 import (
+	arxpb "github.com/keithballdotnet/arx/proto"
 	"golang.org/x/net/context"
+)
+
+// Type of key
+var (
+	CustomerAESKeyType = "aes"
+	MasterKeyType      = "masterkey"
 )
 
 // CryptoProvider provides an interface for crypto provider solutions
 type CryptoProvider interface {
-	CreateKey(ctx context.Context, description string) (KeyMetadata, error)
-	ListKeys(ctx context.Context) ([]KeyMetadata, error)
-	GetKey(ctx context.Context, KeyID string) (Key, error)
-	EnableKey(ctx context.Context, KeyID string) (KeyMetadata, error)
-	DisableKey(ctx context.Context, KeyID string) (KeyMetadata, error)
+	CreateKey(ctx context.Context, description string) (*arxpb.KeyMetadata, error)
+	ListKeys(ctx context.Context) ([]*arxpb.KeyMetadata, error)
+	GetKey(ctx context.Context, KeyID string) (*arxpb.Key, error)
+	EnableKey(ctx context.Context, KeyID string) (*arxpb.KeyMetadata, error)
+	DisableKey(ctx context.Context, KeyID string) (*arxpb.KeyMetadata, error)
 	RotateKey(ctx context.Context, KeyID string) error
 	Encrypt(ctx context.Context, data []byte, KeyID string) ([]byte, error)
 	Decrypt(ctx context.Context, data []byte) ([]byte, string, error)
