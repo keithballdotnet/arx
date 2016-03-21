@@ -12,8 +12,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"io"
-
-	log "github.com/golang/glog"
 )
 
 // GetHmac256 will generate a HMAC hash encoded to base64

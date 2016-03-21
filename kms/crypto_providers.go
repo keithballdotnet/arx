@@ -11,8 +11,6 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/golang/glog"
-
 	"github.com/golang/protobuf/proto"
 	"github.com/keithballdotnet/arx/crypto"
 	arxpb "github.com/keithballdotnet/arx/proto"
@@ -30,7 +28,7 @@ type DefaultCryptoProvider struct {
 
 // NewDefaultCryptoProvider ...
 func NewDefaultCryptoProvider() (*DefaultCryptoProvider, error) {
-	log.Infoln("Using default KMS crypto provider...")
+	log.Println("Using default KMS crypto provider...")
 
 	key, err := MasterKeyStore.GetKey(nil)
 	if err != nil {

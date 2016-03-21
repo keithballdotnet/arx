@@ -10,8 +10,6 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/golang/glog"
-
 	"golang.org/x/net/context"
 
 	"github.com/couchbase/gocb"
@@ -96,7 +94,7 @@ func (sp CouchbaseStorageProvider) SaveKey(ctx context.Context, keyID string, da
 		log.Infof("Error getting key list: %v", err)
 		// We got an error.  If not found that is ok.
 		if strings.Contains(strings.ToLower(err.Error()), "not found") {
-			log.Infoln("Not found error... creating empty list")
+			log.Println("Not found error... creating empty list")
 			keyList = KeyIDList{KeyIDs: []string{}}
 		} else {
 			return err

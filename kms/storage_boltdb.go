@@ -11,8 +11,6 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/golang/glog"
-
 	"golang.org/x/net/context"
 
 	"github.com/boltdb/bolt"

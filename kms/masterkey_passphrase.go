@@ -7,8 +7,6 @@ package kms
 import (
 	"fmt"
 
-	log "github.com/golang/glog"
-
 	"github.com/keithballdotnet/arx/crypto"
 	"golang.org/x/net/context"
 )
@@ -21,7 +19,7 @@ type ArxMasterKeyProvider struct {
 // NewArxMasterKeyProvider ...
 func NewArxMasterKeyProvider() (*ArxMasterKeyProvider, error) {
 
-	log.Infoln("Using ArxMasterKeyProvider...")
+	log.Infof("Using ArxMasterKeyProvider...")
 
 	return &ArxMasterKeyProvider{}, nil
 }

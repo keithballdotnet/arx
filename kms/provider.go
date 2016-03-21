@@ -5,9 +5,12 @@
 package kms
 
 import (
+	"github.com/coreos/pkg/capnslog"
 	arxpb "github.com/keithballdotnet/arx/proto"
 	"golang.org/x/net/context"
 )
+
+var log = capnslog.NewPackageLogger("github.com/keithballdotnet/arx", "kms")
 
 // Type of key
 var (

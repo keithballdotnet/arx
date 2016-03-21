@@ -5,7 +5,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -14,7 +13,7 @@ import (
 	"time"
 
 	"github.com/codegangsta/cli"
-	log "github.com/golang/glog"
+	"github.com/coreos/pkg/capnslog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -23,6 +22,8 @@ import (
 	"github.com/keithballdotnet/arx/kms"
 	arxpb "github.com/keithballdotnet/arx/proto"
 )
+
+var log = capnslog.NewPackageLogger("github.com/keithballdotnet/arx", "main")
 
 type arxServer struct {
 }
@@ -33,6 +34,8 @@ func newServer() *arxServer {
 }
 
 func main() {
+
+	log.Println("Starting Arx")
 
 	app := cli.NewApp()
 	app.Author = "Keith Ball"
@@ -73,8 +76,6 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) {
-		flag.Parse()
-		flag.Set("logtostderr", "true")
 		var err error
 		// Select the storage provider
 		switch c.String("storage") {
@@ -109,7 +110,7 @@ func main() {
 		// Wait for close
 		ch := make(chan os.Signal)
 		signal.Notify(ch, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
-		log.Infoln(<-ch)
+		log.Println(<-ch)
 		stopFunc()
 	}
 

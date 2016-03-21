@@ -11,8 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	log "github.com/golang/glog"
-
 	"golang.org/x/net/context"
 )
 

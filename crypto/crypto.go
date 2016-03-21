@@ -12,11 +12,13 @@ import (
 	"errors"
 	"io"
 
-	log "github.com/golang/glog"
+	"github.com/coreos/pkg/capnslog"
 
 	"golang.org/x/crypto/pbkdf2"
 	"golang.org/x/crypto/scrypt"
 )
+
+var log = capnslog.NewPackageLogger("github.com/keithballdotnet/arx", "crypto")
 
 // AesGCMEncrypt Encrypt data using AES with the GCM cipher mode (Gives Confidentiality and Authenticity)
 func AesGCMEncrypt(plaintext []byte, key []byte) ([]byte, error) {

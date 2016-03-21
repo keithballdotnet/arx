@@ -8,8 +8,6 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	mathrand "math/rand"
-
-	log "github.com/golang/glog"
 )
 
 // GetRandomInt Get a random number
