@@ -18,6 +18,11 @@
 			"revisionTime": "2016-02-02T22:14:25+01:00"
 		},
 		{
+			"path": "github.com/coreos/pkg/capnslog",
+			"revision": "1914e367e85eaf0c25d495b48e060dfe6190f8d0",
+			"revisionTime": "2016-03-14T10:47:17+01:00"
+		},
+		{
 			"path": "github.com/couchbase/gocb",
 			"revision": "3d8bf80e4f8ff89799f8a3badf128270c14782fd",
 			"revisionTime": "2016-02-20T00:00:47-08:00"
