@@ -140,6 +140,7 @@ func main() {
 }
 
 func getClient(c *cli.Context) (arxpb.ArxClient, error) {
+	// Create client
 	var opts []grpc.DialOption
 	if c.GlobalBool("tls") {
 		var sn string
