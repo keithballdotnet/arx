@@ -3,6 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/keithballdotnet/arx?status.svg)](https://godoc.org/github.com/keithballdotnet/arx)
 [![Build Status](https://travis-ci.org/keithballdotnet/arx.svg)](https://travis-ci.org/keithballdotnet/arx)
 [![Coverage Status](https://coveralls.io/repos/github/keithballdotnet/arx/badge.svg?branch=master)](https://coveralls.io/github/keithballdotnet/arx?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/keithballdotnet/arx)](https://goreportcard.com/report/github.com/keithballdotnet/arx)
 
 ## What is Arx?
 

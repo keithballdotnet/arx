@@ -7,7 +7,6 @@ package kms
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -24,9 +23,8 @@ type BoltStorageProvider struct {
 }
 
 // NewBoltStorageProvider ...
-func NewBoltStorageProvider() (*BoltStorageProvider, error) {
+func NewBoltStorageProvider(boltdb string) (*BoltStorageProvider, error) {
 
-	boltdb := os.Getenv("ARX_BOLTDB")
 	if boltdb == "" {
 		boltdb = "arx.db"
 	}

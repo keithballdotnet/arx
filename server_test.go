@@ -7,7 +7,6 @@ package main
 import (
 	"io"
 	"io/ioutil"
-	"os"
 	"testing"
 	"time"
 
@@ -25,17 +24,12 @@ import (
 func setUp(t *testing.T) {
 
 	temp, err := ioutil.TempDir("", "kms_test")
-	err = os.Setenv("ARX_PATH", temp)
 	require.NoError(t, err)
 
-	kms.Storage, err = kms.NewDiskStorageProvider()
+	kms.Storage, err = kms.NewDiskStorageProvider(temp)
 	require.NoError(t, err)
-	arxMKS, err := kms.NewArxMasterKeyProvider()
+	kms.MasterKeyStore, err = kms.NewArxMasterKeyProvider("A long passphrase that will be used to generate the master key")
 	require.NoError(t, err)
-	arxMKS.Passphrase("A long passphrase that will be used to generate the master key")
-
-	kms.MasterKeyStore = arxMKS
-
 	kms.KmsCrypto, err = kms.NewDefaultCryptoProvider()
 	require.NoError(t, err)
 

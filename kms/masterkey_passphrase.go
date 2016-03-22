@@ -11,17 +11,17 @@ import (
 	"golang.org/x/net/context"
 )
 
-// ArxMasterKeyProvider is an implementation of aquiring a MASTER key using a derived key
+// ArxMasterKeyProvider is an implementation of acquiring a MASTER key using a derived key
 type ArxMasterKeyProvider struct {
 	passphrase string
 }
 
 // NewArxMasterKeyProvider ...
-func NewArxMasterKeyProvider() (*ArxMasterKeyProvider, error) {
+func NewArxMasterKeyProvider(passphrase string) (*ArxMasterKeyProvider, error) {
 
 	log.Infof("Using ArxMasterKeyProvider...")
 
-	return &ArxMasterKeyProvider{}, nil
+	return &ArxMasterKeyProvider{passphrase: passphrase}, nil
 }
 
 // Passphrase sets the provider pass phrase

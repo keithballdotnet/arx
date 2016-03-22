@@ -6,9 +6,7 @@ package kms
 
 import (
 	"bytes"
-	"flag"
 	"io/ioutil"
-	"os"
 	"testing"
 
 	"path/filepath"
@@ -18,16 +16,11 @@ import (
 
 func SetUpCouchbaseProvider(t *testing.T) {
 
-	flag.Parse()
-	flag.Set("logtostderr", "true")
-
 	var err error
-	Storage, err = NewCouchbaseStorageProvider()
+	Storage, err = NewCouchbaseStorageProvider("", "")
 	require.NoError(t, err)
-	arxMKS, err := NewArxMasterKeyProvider()
+	MasterKeyStore, err = NewArxMasterKeyProvider("A long passphrase that will be used to generate the master key")
 	require.NoError(t, err)
-	arxMKS.Passphrase("A long passphrase that will be used to generate the master key")
-	MasterKeyStore = arxMKS
 	KmsCrypto, err = NewDefaultCryptoProvider()
 	require.NoError(t, err)
 }
@@ -42,18 +35,13 @@ func TestCouchbaseProvider(t *testing.T) {
 
 func SetUpDiskProvider(t *testing.T) {
 
-	flag.Parse()
-	flag.Set("logtostderr", "true")
 	temp, err := ioutil.TempDir("", "kms_test")
-	err = os.Setenv("ARX_PATH", temp)
 	require.NoError(t, err)
 
-	Storage, err = NewDiskStorageProvider()
+	Storage, err = NewDiskStorageProvider(temp)
 	require.NoError(t, err)
-	arxMKS, err := NewArxMasterKeyProvider()
+	MasterKeyStore, err = NewArxMasterKeyProvider("A long passphrase that will be used to generate the master key")
 	require.NoError(t, err)
-	arxMKS.Passphrase("A long passphrase that will be used to generate the master key")
-	MasterKeyStore = arxMKS
 	KmsCrypto, err = NewDefaultCryptoProvider()
 	require.NoError(t, err)
 }
@@ -67,20 +55,12 @@ func TestDiskProvider(t *testing.T) {
 }
 
 func SetUpBoltDBProvider(t *testing.T) {
-
-	flag.Parse()
-	flag.Set("logtostderr", "true")
-
 	temp, err := ioutil.TempDir("", "kms_test")
-	err = os.Setenv("ARX_BOLTDB", filepath.Join(temp, "arx.db"))
-	require.NoError(t, err)
 
-	Storage, err = NewBoltStorageProvider()
+	Storage, err = NewBoltStorageProvider(filepath.Join(temp, "arx.db"))
 	require.NoError(t, err)
-	arxMKS, err := NewArxMasterKeyProvider()
+	MasterKeyStore, err = NewArxMasterKeyProvider("A long passphrase that will be used to generate the master key")
 	require.NoError(t, err)
-	arxMKS.Passphrase("A long passphrase that will be used to generate the master key")
-	MasterKeyStore = arxMKS
 	KmsCrypto, err = NewDefaultCryptoProvider()
 	require.NoError(t, err)
 }

@@ -164,7 +164,6 @@ func getClient(c *cli.Context) (arxpb.ArxClient, error) {
 	if err != nil {
 		grpclog.Fatalf("fail to dial: %v", err)
 	}
-	//defer conn.Close()
 	client := arxpb.NewArxClient(conn)
 
 	return client, nil

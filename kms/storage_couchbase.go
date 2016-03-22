@@ -6,7 +6,6 @@ package kms
 
 import (
 	"errors"
-	"os"
 	"strings"
 	"time"
 
@@ -21,15 +20,13 @@ type CouchbaseStorageProvider struct {
 }
 
 // NewCouchbaseStorageProvider ...
-func NewCouchbaseStorageProvider() (CouchbaseStorageProvider, error) {
+func NewCouchbaseStorageProvider(cbhost, cbbucket string) (CouchbaseStorageProvider, error) {
 
-	cbhost := os.Getenv("ARX_CBHOST")
 	if cbhost == "" {
 		cbhost = "http://localhost:8091"
 	}
-	cbbuket := os.Getenv("ARX_CBBUCKET")
-	if cbbuket == "" {
-		cbbuket = "kms"
+	if cbbucket == "" {
+		cbbucket = "kms"
 	}
 
 	cluster, err := gocb.Connect(cbhost)
@@ -38,7 +35,7 @@ func NewCouchbaseStorageProvider() (CouchbaseStorageProvider, error) {
 		return CouchbaseStorageProvider{}, err
 	}
 
-	bucket, err := cluster.OpenBucket(cbbuket, "")
+	bucket, err := cluster.OpenBucket(cbbucket, "")
 	if err != nil {
 		log.Errorf("Error getting bucket:  %v", err)
 		return CouchbaseStorageProvider{}, err

@@ -14,15 +14,13 @@ import (
 	"golang.org/x/net/context"
 )
 
-// DiskStorageProvider is an implementation of aquiring a MASTER key using a derived key
+// DiskStorageProvider is an implementation of a simple disk storage
 type DiskStorageProvider struct {
 	path string
 }
 
 // NewDiskStorageProvider ...
-func NewDiskStorageProvider() (DiskStorageProvider, error) {
-
-	path := os.Getenv("ARX_PATH")
+func NewDiskStorageProvider(path string) (DiskStorageProvider, error) {
 
 	log.Infof("Using DiskStorageProvider - Disk Path: %v", path)
 

@@ -72,7 +72,27 @@ func main() {
 		cli.StringFlag{
 			Name:  "storage, s",
 			Value: "disk",
-			Usage: "Storage provider (disk|cb - Default is disk)",
+			Usage: "Storage provider (disk|cb|boltdb) - Default is disk)",
+		},
+		cli.StringFlag{
+			Name:  "path",
+			Value: "",
+			Usage: "Path to be used for disk storage",
+		},
+		cli.StringFlag{
+			Name:  "cbhost",
+			Value: "",
+			Usage: "Couchbase host address used for couchbase storage",
+		},
+		cli.StringFlag{
+			Name:  "cbbucket",
+			Value: "",
+			Usage: "Couchbase bucket name for use with couchbase storage",
+		},
+		cli.StringFlag{
+			Name:  "boltdb",
+			Value: "",
+			Usage: "Path to the boltdb file used for boltdb storage",
 		},
 	}
 	app.Action = func(c *cli.Context) {
@@ -80,9 +100,11 @@ func main() {
 		// Select the storage provider
 		switch c.String("storage") {
 		case "disk":
-			kms.Storage, err = kms.NewDiskStorageProvider()
+			kms.Storage, err = kms.NewDiskStorageProvider(c.String("path"))
 		case "cb":
-			kms.Storage, err = kms.NewCouchbaseStorageProvider()
+			kms.Storage, err = kms.NewCouchbaseStorageProvider(c.String("cbhost"), c.String("cbbucket"))
+		case "boltdb":
+			kms.Storage, err = kms.NewBoltStorageProvider(c.String("boltdb"))
 		default:
 			Exit("You must give a storage provider", 2)
 		}
@@ -91,11 +113,10 @@ func main() {
 		}
 		defer kms.Storage.Close()
 
-		masterKeyStore, err := kms.NewArxMasterKeyProvider()
+		masterKeyStore, err := kms.NewArxMasterKeyProvider(c.String("phrase"))
 		if err != nil {
 			Exit(fmt.Sprintf("Problem creating master key provider: %v", err), 2)
 		}
-		masterKeyStore.Passphrase(c.String("phrase"))
 		kms.MasterKeyStore = masterKeyStore
 
 		// Create the KMS Crypto Provider
