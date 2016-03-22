@@ -7,11 +7,11 @@
 
 ## What is Arx?
 
-Arx is an encryption Key Management Service written in GO.  Modelled extensively on AWS KMS behaviour, the API is used for symmetrical key management.  It offers Cryptography as a Service (CaaS) functionality such as encryption/decryption/reencryption without exposing keys.
+Arx is an encryption Key Management Service written in GO.  Modelled extensively on AWS KMS behaviour, the API is used for symmetrical key management.  It offers Cryptography as a Service (CaaS) functionality such as encryption / decryption / re-encryption without exposing keys.
 
 The crypto provider is based on [AES](http://en.wikipedia.org/wiki/Advanced_Encryption_Standard) and a key size of 256bits using the [GCM cipher](http://en.wikipedia.org/wiki/Galois/Counter_Mode) to provide confidentiality as well as authentication.  
 
-Keys are encrypted and stored on disk/couchbase, using a master key which is derived using [PBKDF2](http://en.wikipedia.org/wiki/PBKDF2) from a passphrase when run in pure software mode.
+Keys are encrypted and stored on disk/couchbase/boltdb, using a master key which is derived using [PBKDF2](http://en.wikipedia.org/wiki/PBKDF2) from a passphrase.
 
 ### Arxclient - Command Line Interface
 
@@ -29,10 +29,24 @@ Arxclient is a command line interface which can be used to manage and interact w
 
 ## How-To
 
-To run get the project...
+### Install arx
 
+```shell
+$ go get github.com/keithballdotnet/arx
 ```
-go get github.com/keithballdotnet/arx
+
+### Start service with defaults
+
+```shell
+$ arx --ph "some 32 character passphrase that you can use to be your derived key"
+```
+
+### Create a new key
+
+```shell
+$ arxclient create -d "example"
+2016/03/22 21:17:16 Create new key
+2016/03/22 21:17:16 KeyID:"ddb6b5d0-15da-4f41-92db-6480953464df" CreationDateRFC3339Nano:"2016-03-22T20:17:16.558504583Z" Description:"example" Enabled:true
 ```
 
 ## AWS Style Key Management Service
@@ -58,6 +72,7 @@ Upon a request for decryption the data envelope will be inspected, the encrypted
 - MS Key Vault: https://msdn.microsoft.com/en-US/library/azure/dn903623
 
 ## Roadmap
+
 + Key Pairs auth?
 + Some other auth modes
 + Key audit logs?
