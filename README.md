@@ -35,21 +35,6 @@ To run get the project...
 go get github.com/keithballdotnet/arx
 ```
 
-You need to set the following variables:
-
-For couchbase key storage use:
-```
-export ARX_CBHOST=
-export ARX_CBBUCKET
-
-```
-
-For disk key storage use:
-```
-export ARX_PATH=/path/to/keys
-
-```
-
 ## AWS Style Key Management Service
 
 The encryption follows the pattern as specified in the in the [KMS Cryptographic Whitepaper](https://d0.awsstatic.com/whitepapers/KMS-Cryptographic-Details.pdf).
@@ -72,13 +57,14 @@ Upon a request for decryption the data envelope will be inspected, the encrypted
 - AWS KMS: https://d0.awsstatic.com/whitepapers/KMS-Cryptographic-Details.pdf
 - MS Key Vault: https://msdn.microsoft.com/en-US/library/azure/dn903623
 
-## Todo
-+ Key Pairs auth
+## Roadmap
++ Key Pairs auth?
 + Some other auth modes
-+ Key audit logs
-+ Diagnostics
++ Key audit logs?
++ Diagnostics?
 
 ## Protobuf Development Set Up
+
 ### Install protobuf
 Download version 3 from... [https://github.com/google/protobuf/releases](https://github.com/google/protobuf/releases)
 
