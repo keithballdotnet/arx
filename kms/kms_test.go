@@ -207,3 +207,74 @@ func DoKMSTest(t *testing.T) {
 	_, _, err = KmsCrypto.Decrypt(nil, ciphertextBlob4)
 	require.NoError(t, err)
 }
+
+func TestFailingProviderMasterKey(t *testing.T) {
+	var err error
+	Storage, err = NewFailingStorageProvider()
+	require.NoError(t, err)
+
+	_, err = NewArxMasterKeyProvider("A long passphrase that will be used to generate the master key")
+	require.NoError(t, err)
+
+	KmsCrypto, err = NewDefaultCryptoProvider()
+	require.Error(t, err)
+}
+
+func SetUpFailingProvider(t *testing.T) {
+	temp, err := ioutil.TempDir("", "kms_test")
+	require.NoError(t, err)
+
+	Storage, err = NewDiskStorageProvider(temp)
+	require.NoError(t, err)
+
+	MasterKeyStore, err = NewArxMasterKeyProvider("A long passphrase that will be used to generate the master key")
+	require.NoError(t, err)
+
+	KmsCrypto, err = NewDefaultCryptoProvider()
+	require.NoError(t, err)
+
+	Storage, err = NewFailingStorageProvider()
+	require.NoError(t, err)
+}
+
+func TestFailingProvider(t *testing.T) {
+
+	SetUpFailingProvider(t)
+	defer Storage.Close()
+
+	DoFailingKMSTest(t)
+}
+
+func DoFailingKMSTest(t *testing.T) {
+
+	_, err := KmsCrypto.CreateKey(nil, "bleh")
+	require.Error(t, err)
+
+	_, err = KmsCrypto.GetKey(nil, "some key")
+	require.Error(t, err)
+
+	_, err = KmsCrypto.ListKeys(nil)
+	require.Error(t, err)
+
+	err = KmsCrypto.RotateKey(nil, "some key")
+	require.Error(t, err)
+
+	quote := "Every moment think steadily as a Roman and a man to do what thou hast in hand with perfect and simple dignity, and feeling of affection, and freedom, and justice; and to give thyself relief from all other thoughts."
+	plainText := []byte(quote)
+	ciphertextBlob := []byte("Do wrong to thyself, do wrong to thyself, my soul; but thou wilt no longer have the opportunity of honouring thyself.")
+
+	_, err = KmsCrypto.Encrypt(nil, plainText, "some key")
+	require.Error(t, err)
+
+	_, _, err = KmsCrypto.Decrypt(nil, ciphertextBlob)
+	require.Error(t, err)
+
+	_, _, err = KmsCrypto.ReEncrypt(nil, ciphertextBlob, "some key")
+	require.Error(t, err)
+
+	_, _, err = KmsCrypto.Decrypt(nil, ciphertextBlob)
+	require.Error(t, err)
+
+	_, err = KmsCrypto.DisableKey(nil, "some key")
+	require.Error(t, err)
+}

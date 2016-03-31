@@ -48,7 +48,7 @@ func (mkp *ArxMasterKeyProvider) GetKey(ctx context.Context) ([]byte, error) {
 
 		err = Storage.SaveKey(ctx, "kms.salt", salt, false)
 		if err != nil {
-			return nil, fmt.Errorf("WriteFile() failed %s\n", err)
+			return nil, fmt.Errorf("SaveKey() failed %s\n", err)
 		}
 	}
 

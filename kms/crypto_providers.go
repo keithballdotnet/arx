@@ -82,7 +82,7 @@ func (cp DefaultCryptoProvider) ListKeys(ctx context.Context) ([]*arxpb.KeyMetad
 
 	keyLists, err := Storage.ListCustomerKeyIDs(ctx)
 	if err != nil {
-		return metadata, nil
+		return metadata, err
 	}
 
 	for _, keyID := range keyLists {
