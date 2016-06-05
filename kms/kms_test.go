@@ -73,6 +73,24 @@ func TestBoltProvider(t *testing.T) {
 	DoKMSTest(t)
 }
 
+func SetUpCassandraDBProvider(t *testing.T) {
+	var err error
+	Storage, err = NewCassandraStorageProvider("")
+	require.NoError(t, err)
+	MasterKeyStore, err = NewArxMasterKeyProvider("A long passphrase that will be used to generate the master key")
+	require.NoError(t, err)
+	KmsCrypto, err = NewDefaultCryptoProvider()
+	require.NoError(t, err)
+}
+
+func TestCassandraProvider(t *testing.T) {
+
+	SetUpCassandraDBProvider(t)
+	defer Storage.Close()
+
+	DoKMSTest(t)
+}
+
 func DoKMSTest(t *testing.T) {
 
 	desc := "A new key description!"
@@ -102,6 +120,8 @@ func DoKMSTest(t *testing.T) {
 	require.NoError(t, err)
 
 	keyFoundInList := false
+
+	t.Logf("Looking for key %v", keyMetadata.KeyID)
 
 	for _, k := range keyList {
 		if k.KeyID == keyMetadata.KeyID {

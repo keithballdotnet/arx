@@ -44,6 +44,31 @@
 			"revisionTime": "2016-02-21T10:44:43Z"
 		},
 		{
+			"path": "github.com/gocql/gocql",
+			"revision": "b7b8a0e04b0cb0ca0b379421c58ec6fab9939b85",
+			"revisionTime": "2016-05-25T21:37:33+01:00"
+		},
+		{
+			"path": "github.com/gocql/gocql/internal/ccm",
+			"revision": "b7b8a0e04b0cb0ca0b379421c58ec6fab9939b85",
+			"revisionTime": "2016-05-25T21:37:33+01:00"
+		},
+		{
+			"path": "github.com/gocql/gocql/internal/lru",
+			"revision": "b7b8a0e04b0cb0ca0b379421c58ec6fab9939b85",
+			"revisionTime": "2016-05-25T21:37:33+01:00"
+		},
+		{
+			"path": "github.com/gocql/gocql/internal/murmur",
+			"revision": "b7b8a0e04b0cb0ca0b379421c58ec6fab9939b85",
+			"revisionTime": "2016-05-25T21:37:33+01:00"
+		},
+		{
+			"path": "github.com/gocql/gocql/internal/streams",
+			"revision": "b7b8a0e04b0cb0ca0b379421c58ec6fab9939b85",
+			"revisionTime": "2016-05-25T21:37:33+01:00"
+		},
+		{
 			"path": "github.com/golang/protobuf/proto",
 			"revision": "99511271042a09d1e01baea8781caa5210fec66e",
 			"revisionTime": "2016-03-10T21:13:00+11:00"
@@ -62,6 +87,16 @@
 			"path": "github.com/golang/protobuf/ptypes/any",
 			"revision": "99511271042a09d1e01baea8781caa5210fec66e",
 			"revisionTime": "2016-03-10T21:13:00+11:00"
+		},
+		{
+			"path": "github.com/golang/snappy",
+			"revision": "d9eb7a3d35ec988b8585d4a0068e462c27d28380",
+			"revisionTime": "2016-05-29T15:00:41+10:00"
+		},
+		{
+			"path": "github.com/hailocab/go-hostpool",
+			"revision": "e80d13ce29ede4452c43dea11e79b9bc8a15b478",
+			"revisionTime": "2016-01-25T11:53:50Z"
 		},
 		{
 			"origin": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
@@ -168,6 +203,11 @@
 			"path": "google.golang.org/grpc/transport",
 			"revision": "d3ddb4469d5a1b949fc7a7da7c1d6a0d1b6de994",
 			"revisionTime": "2016-03-17T10:50:43-07:00"
+		},
+		{
+			"path": "gopkg.in/inf.v0",
+			"revision": "3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4",
+			"revisionTime": "2015-09-11T12:57:57Z"
 		}
 	]
 }
