@@ -16,6 +16,7 @@ import (
 	"github.com/coreos/pkg/capnslog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 
 	"github.com/keithballdotnet/arx/crypto"
@@ -167,7 +168,7 @@ func (s *arxServer) CreateKey(ctx context.Context, in *arxpb.CreateKeyRequest) (
 	key, err := kms.KmsCrypto.CreateKey(ctx, in.Description)
 	if err != nil {
 		log.Errorf("CreateKey: %v", err)
-		return nil, err
+		return nil, grpc.Errorf(codes.Unknown, "CreateKey failed", nil)
 	}
 
 	log.Infof("CreateKey took: %dms", time.Since(start)/time.Millisecond)
