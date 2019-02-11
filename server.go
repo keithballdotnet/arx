@@ -168,7 +168,7 @@ func (s *arxServer) CreateKey(ctx context.Context, in *arxpb.CreateKeyRequest) (
 	key, err := kms.KmsCrypto.CreateKey(ctx, in.Description)
 	if err != nil {
 		log.Errorf("CreateKey: %v", err)
-		return nil, grpc.Errorf(codes.Unknown, "CreateKey failed", nil)
+		return nil, err
 	}
 
 	log.Infof("CreateKey took: %dms", time.Since(start)/time.Millisecond)
