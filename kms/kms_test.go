@@ -85,6 +85,7 @@ func SetUpCassandraDBProvider(t *testing.T) {
 
 func TestCassandraProvider(t *testing.T) {
 
+	t.Skip("Not atm")
 	SetUpCassandraDBProvider(t)
 	defer Storage.Close()
 
